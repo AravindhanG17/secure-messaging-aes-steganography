@@ -1,0 +1,4606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard | Secure Messaging</title>
+  <link rel="shortcut icon" href="{{ url_for('favicon') }}" type="image/x-icon" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+      /* Screenshot Protection */
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+      -webkit-touch-callout: none;
+    }
+
+    /* Prevent selection on all elements except inputs */
+    body * {
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+    }
+
+    /* Allow text selection only in input fields */
+    input, textarea {
+      -webkit-user-select: text !important;
+      -moz-user-select: text !important;
+      -ms-user-select: text !important;
+      user-select: text !important;
+    }
+
+    .chat-container {
+      display: flex;
+      width: 100%;
+      height: 100vh;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .sidebar {
+      width: 350px;
+      background: white;
+      border-right: 1px solid #e0e6ed;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 2px 0 15px rgba(0, 0, 0, 0.08);
+      transition: transform 0.3s ease;
+      z-index: 10;
+    }
+
+    .sidebar-header {
+      background: linear-gradient(to right, #6a11cb, #2575fc);
+      color: white;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 10px rgba(106, 17, 203, 0.3);
+    }
+
+    .user-profile {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .profile-pic {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      font-size: 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .user-info h3 {
+      font-size: 18px;
+      margin: 0;
+    }
+
+    .user-info p {
+      font-size: 13px;
+      opacity: 0.9;
+      margin: 0;
+    }
+
+    .icon-btn {
+      background: rgba(255,255,255,0.2);
+      border: none;
+      color: white;
+      padding: 8px 10px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s;
+      margin-right: 8px;
+    }
+    .icon-btn:hover {
+      background: rgba(255,255,255,0.35);
+      transform: translateY(-1px);
+    }
+
+
+    .logout-btn {
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      color: white;
+      padding: 8px 15px;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .logout-btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: translateY(-1px);
+    }
+
+    .new-chat-form {
+      padding: 20px;
+      border-bottom: 1px solid #e0e6ed;
+      display: flex;
+      gap: 10px;
+    }
+
+    .new-chat-input {
+      flex: 1;
+      padding: 10px;
+      border: 2px solid #e0e6ed;
+      border-radius: 20px;
+      outline: none;
+      transition: all 0.3s;
+    }
+
+    .new-chat-input:focus {
+      border-color: #6a11cb;
+      box-shadow: 0 0 0 3px rgba(106, 17, 203, 0.1);
+    }
+
+    .new-chat-btn {
+      background: linear-gradient(to right, #6a11cb, #2575fc);
+      color: white;
+      border: none;
+      border-radius: 20px;
+      padding: 10px 20px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .new-chat-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 2px 10px rgba(106, 17, 203, 0.3);
+    }
+
+    .search-bar {
+      padding: 20px;
+      border-bottom: 1px solid #e0e6ed;
+      position: relative;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 12px 20px 12px 45px;
+      border: 2px solid #e0e6ed;
+      border-radius: 25px;
+      background: #f8f9fa;
+      outline: none;
+      transition: all 0.3s;
+      font-size: 14px;
+    }
+
+    .search-input:focus {
+      border-color: #6a11cb;
+      box-shadow: 0 0 0 3px rgba(106, 17, 203, 0.1);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 35px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #6a11cb;
+    }
+
+    .chat-list-header {
+      padding: 10px 15px;
+      font-size: 14px;
+      color: #6a11cb;
+      font-weight: 600;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .chat-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px;
+    }
+
+    .chat-item {
+      display: flex;
+      align-items: center;
+      padding: 15px;
+      border-radius: 15px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: all 0.3s;
+      background: white;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+      position: relative;
+    }
+
+    .chat-item:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .chat-item.active {
+      background: linear-gradient(to right, #6a11cb, #2575fc);
+      color: white;
+    }
+
+    .chat-avatar {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: linear-gradient(to right, #6a11cb, #2575fc);
+      margin-right: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      font-size: 22px;
+      box-shadow: 0 2px 10px rgba(106, 17, 203, 0.3);
+      transition: all 0.3s;
+    }
+
+    .chat-item.active .chat-avatar {
+      background: rgba(255, 255, 255, 0.2);
+      box-shadow: 0 2px 10px rgba(255, 255, 255, 0.3);
+    }
+
+    .chat-info {
+      flex: 1;
+    }
+
+    .chat-name {
+      font-weight: 600;
+      margin-bottom: 5px;
+      font-size: 16px;
+    }
+
+    .chat-preview {
+      font-size: 14px;
+      opacity: 0.7;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 180px;
+    }
+
+    .chat-time {
+      font-size: 12px;
+      opacity: 0.6;
+      margin-left: 10px;
+      white-space: nowrap;
+    }
+
+    .unread-badge {
+      background: #ff4757;
+      color: white;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      position: absolute;
+      right: 15px;
+      top: 15px;
+    }
+
+    .main-chat {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: #f8f9fa;
+      position: relative;
+    }
+
+    .chat-header {
+      background: white;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      z-index: 5;
+    }
+
+    .back-btn {
+      color: #6a11cb;
+      font-size: 20px;
+      cursor: pointer;
+      padding: 10px;
+      border-radius: 50%;
+      transition: all 0.3s;
+      display: none;
+    }
+
+    .back-btn:hover {
+      background: #e0e6ed;
+      transform: scale(1.1);
+    }
+
+    .chat-partner {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .partner-avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: linear-gradient(to right, #6a11cb, #2575fc);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      font-size: 18px;
+      box-shadow: 0 2px 8px rgba(106, 17, 203, 0.3);
+    }
+
+    .partner-info h3 {
+      font-size: 18px;
+      margin: 0;
+      color: #333;
+    }
+
+    .partner-info p {
+      font-size: 13px;
+      color: #666;
+      margin: 0;
+    }
+
+    .online-indicator {
+      width: 10px;
+      height: 10px;
+      background: #2ed573;
+      border-radius: 50%;
+      margin-left: 5px;
+      display: inline-block;
+    }
+
+    .messages-container {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="none"/><path d="M0,0 L100,100 M100,0 L0,100" stroke="rgba(106,17,203,0.03)" stroke-width="1"/></svg>');
+    }
+
+    .message {
+      display: flex;
+      margin-bottom: 20px;
+      animation: fadeInMessage 0.4s ease-out;
+    }
+
+    .message.sent {
+      justify-content: flex-end;
+    }
+
+    .message.received {
+      justify-content: flex-start;
+    }
+
+    .message-bubble {
+      max-width: 70%;
+      padding: 10px 15px;
+      border-radius: 20px;
+      position: relative;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .message.sent .message-bubble {
+      background: linear-gradient(to right, #6a11cb, #2575fc);
+      color: white;
+      border-bottom-right-radius: 5px;
+      border: 2px solid #2575fc;
+    }
+
+    .message.received .message-bubble {
+      background: white;
+      color: #333;
+      border-bottom-left-radius: 5px;
+      border: 2px solid #e0e6ed;
+    }
+
+    .message-text {
+      word-wrap: break-word;
+      line-height: 1.4;
+    }
+
+    .message-time {
+      font-size: 12px;
+      opacity: 0.7;
+      margin-top: 2px;
+      text-align: right;
+    }
+
+    .message.sent .message-time {
+      text-align: right;
+    }
+
+    .image-message {
+      max-width: 250px;
+      border-radius: 15px;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s;
+      position: relative;
+    }
+
+    .image-message:hover {
+      transform: scale(1.02);
+    }
+
+    /* ========== TIME-LOCK STYLES ========== */
+    .lock-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.85);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border-radius: 15px;
+      backdrop-filter: blur(8px);
+      cursor: not-allowed;
+    }
+
+    .lock-icon {
+      font-size: 48px;
+      color: #ffd700;
+      margin-bottom: 15px;
+      animation: lockPulse 2s infinite;
+    }
+
+    @keyframes lockPulse {
+      0%, 100% { transform: scale(1); }
+      50%      { transform: scale(1.1); }
+    }
+
+    .lock-countdown {
+      color: white;
+      font-size: 18px;
+      font-weight: bold;
+      text-align: center;
+      margin-bottom: 8px;
+    }
+
+    .lock-message {
+      color: #ddd;
+      font-size: 13px;
+      text-align: center;
+    }
+
+    .time-lock-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(255, 215, 0, 0.2);
+      color: #ffd700;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      margin-top: 8px;
+      font-weight: 600;
+    }
+
+    .preview-container {
+      display: flex;
+      gap: 50px;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      padding: 10px 0;
+      border-bottom: 1px solid #e0e6ed;
+      width: 100%;
+      margin-bottom: 15px;
+    }
+
+    .preview-container:empty {
+      display: none;
+      border-bottom: none;
+      margin-bottom: 0;
+      padding: 0;
+    }
+
+    .preview-box {
+      position: relative;
+      width: 100%;
+      max-width: 150px;
+      flex-shrink: 0;
+    }
+
+    .preview-img {
+      width: 150px;
+      height: 60px;
+      object-fit: cover;
+      border-radius: 6px;
+      border: 3px solid #6a11cb;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+
+   
+
+    .remove-btn {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      background: #ff4757;
+      color: white;
+      border: none;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      line-height: 1;
+      z-index: 2;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .file-name {
+      font-size: 12px;
+      margin-top: 4px;
+      color: #333;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      text-align: center;
+      max-width: 90px;
+    }
+
+    /* Message Options Row - Option 1 Styles */
+    .message-options-row {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      animation: slideDown 0.3s ease;
+    }
+
+    .option-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      background: #f8f9fa;
+      border-radius: 12px;
+      border: 2px solid transparent;
+      transition: all 0.3s;
+      cursor: pointer;
+    }
+
+    .option-group:hover {
+      background: #e9ecef;
+      border-color: #6a11cb;
+    }
+
+    .option-group input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: #6a11cb;
+      cursor: pointer;
+    }
+
+    .option-group.burn-option input[type="checkbox"] {
+      accent-color: #e74c3c;
+    }
+
+    .option-label {
+      font-size: 14px;
+      font-weight: 500;
+      color: #333;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .option-label i {
+      font-size: 16px;
+    }
+
+    .time-lock-option .option-label i {
+      color: #6a11cb;
+    }
+
+    .burn-option .option-label i {
+      color: #e74c3c;
+    }
+
+    .time-input-container {
+      display: none;
+      margin-bottom: 16px;
+      padding: 12px;
+      background: #f1f3f5;
+      border-radius: 10px;
+      border-left: 3px solid #6a11cb;
+      animation: slideDown 0.3s ease;
+    }
+
+    .time-input-container.active {
+      display: block;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .time-input-container input[type="datetime-local"] {
+      width: 100%;
+      padding: 10px;
+      border: 2px solid #dee2e6;
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.3s;
+    }
+
+    .time-input-container input[type="datetime-local"]:focus {
+      border-color: #6a11cb;
+    }
+
+    /* Updated message input styles */
+    .message-input-row {
+      display: flex;
+      align-items: flex-end;
+      gap: 12px;
+    }
+
+    .upload-buttons {
+      display: flex;
+      gap: 8px;
+    }
+
+    /* Options Toggle Button */
+    .options-toggle-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: none;
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      color: white;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(240, 147, 251, 0.3);
+      position: relative;
+    }
+
+    .options-toggle-btn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 4px 12px rgba(240, 147, 251, 0.4);
+    }
+
+    .options-toggle-btn.active {
+      background: linear-gradient(135deg, #6a11cb, #2575fc);
+      box-shadow: 0 4px 12px rgba(106, 17, 203, 0.4);
+    }
+
+    .options-toggle-btn i {
+      font-size: 18px;
+    }
+
+    
+
+    @keyframes pulse {
+      0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+      50% {
+        opacity: 0.7;
+        transform: scale(1.1);
+      }
+    }
+
+    .chat-input {
+      padding: 20px;
+      background: white;
+      border-top: 1px solid #e0e6ed;
+      display: none; /* Hidden by default */
+      flex-direction: column;
+      gap: 0;
+      box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+      min-height: 90px;
+    }
+
+    .chat-input.active {
+      display: flex; /* Show when a user is selected */
+    }
+
+    .file-upload {
+      position: relative;
+      display: inline-block;
+    }
+
+    .file-upload input[type="file"] {
+      position: absolute;
+      opacity: 0;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+    }
+
+    .upload-btn {
+      background: #f8f9fa;
+      border: 2px solid #e0e6ed;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: #6a11cb;
+      font-size: 16px;
+      transition: all 0.3s;
+    }
+
+    .upload-btn:hover {
+      background: #6a11cb;
+      color: white;
+      border-color: #6a11cb;
+      transform: scale(1.05);
+    }
+
+    .message-input {
+      flex: 1;
+      padding: 15px 20px;
+      border: 2px solid #e0e6ed;
+      border-radius: 25px;
+      outline: none;
+      resize: none;
+      font-family: inherit;
+      line-height: 1.4;
+      max-height: 120px;
+      transition: all 0.3s;
+    }
+
+    .message-input:focus {
+      border-color: #6a11cb;
+      box-shadow: 0 0 0 3px rgba(106, 17, 203, 0.1);
+    }
+
+    .send-btn {
+      background: linear-gradient(to right, #6a11cb, #2575fc);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 16px;
+      transition: all 0.3s;
+      box-shadow: 0 2px 10px rgba(106, 17, 203, 0.3);
+    }
+
+    .send-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 15px rgba(106, 17, 203, 0.4);
+    }
+
+    .send-btn:active {
+      transform: scale(0.95);
+    }
+
+    @keyframes fadeInMessage {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .no-chat-selected {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: #666;
+      text-align: center;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      padding: 20px;
+    }
+
+    .no-chat-selected i {
+      font-size: 64px;
+      margin-bottom: 20px;
+      opacity: 0.3;
+    }
+
+    .no-chat-selected h3 {
+      margin-bottom: 10px;
+      font-size: 24px;
+    }
+
+    .no-chat-selected p {
+      font-size: 16px;
+      max-width: 400px;
+      line-height: 1.5;
+    }
+
+    .security-indicator {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin-top: 10px;
+      color: #2ed573;
+      font-size: 12px;
+    }
+
+    .typing-indicator {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      color: #6a11cb;
+      font-size: 12px;
+      margin-top: 5px;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .typing-indicator.visible {
+      opacity: 1;
+    }
+
+    .typing-dots {
+      display: flex;
+      gap: 2px;
+    }
+
+    .typing-dot {
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: #6a11cb;
+      animation: typing 1.4s infinite ease-in-out;
+    }
+
+    .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+    .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+
+    @keyframes typing {
+      0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
+      40%           { transform: scale(1);   opacity: 1;   }
+    }
+
+    .message-status {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      font-size: 10px;
+      margin-top: 5px;
+      opacity: 0.7;
+    }
+
+    .message-options {
+      position: absolute;
+      right: 10px;
+      top: 10px;
+      opacity: 0;
+      transition: opacity 0.3s;
+      z-index: 100;
+    }
+
+    .message-bubble:hover .message-options {
+      opacity: 1;
+    }
+
+    .message-option-btn {
+      background: rgba(255, 255, 255, 0.95);
+      border: none;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 14px;
+      color: #6a11cb;
+      transition: all 0.3s;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+      position: relative;
+      z-index: 100;
+    }
+
+    .message-option-btn:hover {
+      background: white;
+      transform: scale(1.15);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        z-index: 1000;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+        height: 100%;
+      }
+
+      .sidebar.open {
+        transform: translateX(0);
+      }
+
+      .main-chat {
+        width: 100%;
+      }
+
+      .chat-header {
+        justify-content: space-between;
+      }
+
+      .back-btn {
+        display: block;
+      }
+
+      .message-bubble {
+        max-width: 85%;
+      }
+    }
+
+    /* Scrollbar styling */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #c3cfe2;
+      border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #6a11cb;
+    }
+
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(106, 17, 203, 0.3);
+      border-radius: 50%;
+      border-top-color: #6a11cb;
+      animation: spin 1s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .options-menu {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      min-width: 120px;
+      z-index: 1000;
+    }
+
+    .options-menu-item {
+      padding: 10px 15px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .options-menu-item:hover {
+      background: #f0f0f0;
+    }
+
+    .options-menu-item.delete {
+      color: red;
+    }
+
+    .ticks {
+      font-size: 12px;
+      margin-left: 5px;
+    }
+
+    .single-tick::after {
+      content: '✓';
+      color: #919191;
+    }
+
+    .double-tick::after {
+      content: '✓✓';
+      color: #8696a0;
+    }
+
+    .double-tick.blue::after {
+      content: '✓✓';
+      color: #25d366;
+      font-weight: bold;
+    }
+
+
+    .preview-container {
+      display: flex;
+      gap: 50px;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      padding: 10px 0;
+      border-bottom: 1px solid #e0e6ed;
+      width: 100%;
+      margin-bottom: 15px;
+    }
+
+    .preview-container:empty {
+      display: none;
+      border-bottom: none;
+      margin-bottom: 0;
+      padding: 0;
+    }
+
+    
+    
+
+    .preview-file {
+      width: 150px;
+      height: 60px;
+      background: #f0f4ff;
+      border-radius: 6px;
+      border: 3px dashed #2575fc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Risk Analysis Badge Styles */
+    #riskBadge {
+      display: none;
+      margin-top: 8px;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 13px;
+    }
+
+    .risk-badge-low {
+      background: #d4edda;
+      border: 1px solid #28a745;
+      color: #155724;
+    }
+
+    .risk-badge-medium {
+      background: #fff3cd;
+      border: 1px solid #ffc107;
+      color: #856404;
+    }
+
+    .risk-badge-high {
+      background: #f8d7da;
+      border: 1px solid #dc3545;
+      color: #721c24;
+    }
+
+    .remove-btn {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      background: #ff4757;
+      color: white;
+      border: none;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      line-height: 1;
+      z-index: 2;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .remove-btn:hover {
+      background: #ff2e43;
+      transform: scale(1.1);
+    }
+
+    .file-name {
+      font-size: 12px;
+      margin-top: 4px;
+      color: #333;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      text-align: center;
+      max-width: 90px;
+    }
+
+    .file-icon {
+      font-size: 36px;
+      color: #2575fc;
+    }
+
+    @media (max-width: 768px) {
+      .preview-box {
+        width: 70px;
+      }
+      .preview-img,
+      .preview-file {
+        width: 70px;
+        height: 70px;
+      }
+      .file-name {
+        max-width: 70px;
+      }
+    }
+    /* Integrity Check Styles */
+    .integrity-checking {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+        padding: 30px 20px;
+        color: #6a11cb;
+        font-weight: 500;
+    }
+    .integrity-ok-box {
+        background: #d4edda;
+        border: 2px solid #28a745;
+        border-radius: 12px;
+        padding: 20px;
+        text-align: center;
+        color: #155724;
+        margin: 10px 0;
+    }
+    .integrity-ok-box .integrity-icon { font-size: 40px; margin-bottom: 10px; }
+    .integrity-ok-box h4 { margin: 0 0 8px; font-size: 18px; color: #155724; }
+    .integrity-ok-box p  { margin: 0 0 16px; font-size: 14px; }
+    .proceed-decrypt-btn {
+        background: linear-gradient(to right, #6a11cb, #2575fc);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        padding: 12px 32px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.2s;
+        box-shadow: 0 4px 12px rgba(106,17,203,0.3);
+    }
+    .proceed-decrypt-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(106,17,203,0.4); }
+    .integrity-fail-box {
+        background: #f8d7da;
+        border: 2px solid #dc3545;
+        border-radius: 12px;
+        padding: 20px;
+        text-align: center;
+        color: #721c24;
+        margin: 10px 0;
+    }
+    .integrity-fail-box .integrity-icon { font-size: 40px; margin-bottom: 10px; }
+    .integrity-fail-box h4 { margin: 0 0 8px; font-size: 18px; color: #721c24; }
+    .integrity-breach-box {
+        background: #fff3cd;
+        border: 2px solid #ffc107;
+        border-radius: 12px;
+        padding: 20px;
+        text-align: center;
+        color: #856404;
+        margin: 10px 0;
+    }
+
+    .decrypt-error-box {
+      color: #e74c3c;
+      font-size: 18px;
+      font-weight: 600;
+      text-align: center;
+      margin: 20px 0;
+      padding: 15px 20px;
+      background: #ffebee;
+      border-radius: 10px;
+      border: 1px solid #e74c3c;
+      line-height: 1.5;
+      box-shadow: 0 2px 8px rgba(231, 76, 60, 0.15);
+    }
+
+    .file-name.truncate {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 280px;
+      display: inline-block;
+      vertical-align: middle;
+      font-size: 14px;
+      color: #333;
+      font-weight: 500;
+    }
+
+    #decryptResult {
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      max-width: 100%;
+    }
+
+  
+        /* ===========================
+           SETTINGS MODAL STYLES
+           =========================== */
+
+        .settings-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(4px);
+            z-index: 3900;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .settings-modal-content {
+            background: white;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 600px;
+            padding: 0;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+            position: relative;
+            animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .settings-header {
+            text-align: center;
+            padding: 25px 40px 20px;
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            border-radius: 20px 20px 0 0;
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            box-shadow: 0 4px 20px rgba(106, 17, 203, 0.2);
+        }
+
+        .settings-icon {
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            font-size: 28px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            animation: rotateCog 20s linear infinite;
+        }
+
+        @keyframes rotateCog {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .settings-header h3 {
+            margin: 0 0 6px;
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .settings-subtitle {
+            margin: 0;
+            font-size: 14px;
+            opacity: 0.95;
+            font-weight: 400;
+        }
+
+        .settings-close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 36px;
+            height: 36px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            z-index: 20;
+        }
+
+        .settings-close-btn:hover {
+            background: rgba(255, 255, 255, 0.35);
+            transform: scale(1.1);
+        }
+
+        .settings-content {
+            padding: 32px;
+        }
+
+        .settings-section {
+            margin-bottom: 32px;
+        }
+
+        .settings-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .section-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin: 0 0 16px;
+            padding-left: 4px;
+        }
+
+        .settings-card {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 20px;
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 16px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .settings-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .settings-card:hover::before {
+            opacity: 0.05;
+        }
+
+        .settings-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(106, 17, 203, 0.25);
+            border-color: #6a11cb;
+        }
+
+        .settings-card.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .settings-card.disabled:hover {
+            transform: none;
+            box-shadow: none;
+            border-color: #e2e8f0;
+        }
+
+        .settings-card.disabled::before {
+            display: none;
+        }
+
+        .card-icon {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, #f0f4ff 0%, #e8f0fe 100%);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: #6a11cb;
+            flex-shrink: 0;
+            position: relative;
+            z-index: 1;
+            transition: all 0.3s;
+        }
+
+        .settings-card:hover .card-icon {
+            transform: scale(1.1);
+        }
+
+        .card-icon.deadman-icon {
+            background: linear-gradient(135deg, #d4f4dd 0%, #c7f0d8 100%);
+            color: #059669;
+        }
+
+        .card-content {
+            flex: 1;
+            position: relative;
+            z-index: 1;
+        }
+
+        .card-content h5 {
+            margin: 0 0 4px;
+            font-size: 16px;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .card-content p {
+            margin: 0;
+            font-size: 13px;
+            color: #64748b;
+            line-height: 1.5;
+        }
+
+        .card-arrow {
+            width: 32px;
+            height: 32px;
+            background: #f1f5f9;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: #94a3b8;
+            flex-shrink: 0;
+            position: relative;
+            z-index: 1;
+            transition: all 0.3s;
+        }
+
+        .settings-card:hover .card-arrow {
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            color: white;
+            transform: translateX(4px);
+            box-shadow: 0 4px 12px rgba(106, 17, 203, 0.3);
+        }
+
+        .settings-card.disabled .card-arrow {
+            background: #f8fafc;
+        }
+
+        /* ===========================
+           IMPROVED DEAD MAN'S SWITCH MODAL STYLES
+           =========================== */
+
+        .deadman-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(4px);
+            z-index: 4000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .deadman-modal-content {
+            background: white;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 560px;
+            padding: 0;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+            position: relative;
+            animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            border: none;
+            background: rgba(255, 255, 255, 0.2);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            font-size: 20px;
+            font-weight: bold;
+            backdrop-filter: blur(10px);
+        }
+
+        .modal-close-btn:hover {
+            background: rgba(255, 255, 255, 0.35);
+            transform: scale(1.1);
+        }
+
+        .modal-header {
+            text-align: center;
+            padding: 25px 40px 20px;
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            border-radius: 20px 20px 0 0;
+            color: white;
+        }
+
+        .modal-icon {
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            font-size: 28px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal-header h3 {
+            margin: 0 0 6px;
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .modal-subtitle {
+            margin: 0;
+            font-size: 14px;
+            opacity: 0.95;
+            font-weight: 400;
+        }
+
+        .info-card {
+            margin: 24px 32px;
+            background: linear-gradient(135deg, #f0f4ff 0%, #e8f0fe 100%);
+            border-radius: 16px;
+            padding: 20px;
+            border: 2px solid #e0e7ff;
+        }
+
+        .info-card-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+            color: #6a11cb;
+            font-size: 15px;
+        }
+
+        .info-card-header i {
+            font-size: 20px;
+        }
+
+        .info-card p {
+            margin: 0 0 16px;
+            font-size: 14px;
+            color: #475569;
+            line-height: 1.6;
+        }
+
+        .stages-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .stage {
+            text-align: center;
+            padding: 12px 8px;
+            background: white;
+            border-radius: 10px;
+            border: 2px solid #e0e7ff;
+            transition: all 0.2s;
+        }
+
+        .stage:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(106, 17, 203, 0.15);
+        }
+
+        .stage-icon {
+            display: block;
+            font-size: 24px;
+            margin-bottom: 6px;
+        }
+
+        .stage-label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: #6a11cb;
+        }
+
+        .enable-switch {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 20px 32px;
+            background: #f8fafc;
+            margin: 0 32px 24px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+
+        .enable-switch:hover {
+            background: #f1f5f9;
+            border-color: #e2e8f0;
+        }
+
+        .enable-switch input[type="checkbox"] {
+            display: none;
+        }
+
+        .switch-slider {
+            position: relative;
+            width: 56px;
+            height: 32px;
+            background: #cbd5e1;
+            border-radius: 16px;
+            transition: all 0.3s;
+            flex-shrink: 0;
+        }
+
+        .switch-slider::before {
+            content: '';
+            position: absolute;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: white;
+            top: 3px;
+            left: 3px;
+            transition: all 0.3s;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .enable-switch input:checked + .switch-slider {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+
+        .enable-switch input:checked + .switch-slider::before {
+            transform: translateX(24px);
+        }
+
+        .switch-label {
+            font-size: 15px;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 0 32px 24px;
+        }
+
+        .form-group {
+            margin: 0 32px 24px;
+        }
+
+        .form-row .form-group {
+            margin: 0;
+        }
+
+        .form-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #334155;
+            margin-bottom: 10px;
+        }
+
+        .form-label i {
+            color: #6a11cb;
+            font-size: 16px;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 14px 16px;
+            padding-right: 70px;
+            border-radius: 12px;
+            border: 2px solid #e2e8f0;
+            font-size: 15px;
+            transition: all 0.2s;
+            font-family: inherit;
+            background: white;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #6a11cb;
+            box-shadow: 0 0 0 4px rgba(106, 17, 203, 0.1);
+        }
+
+        .form-input:hover {
+            border-color: #cbd5e1;
+        }
+
+        .input-suffix {
+            position: absolute;
+            right: 16px;
+            font-size: 13px;
+            color: #94a3b8;
+            font-weight: 500;
+            pointer-events: none;
+        }
+
+
+
+        .help-text {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 8px;
+            line-height: 1.5;
+        }
+
+        .help-text i {
+            font-size: 11px;
+            color: #6a11cb;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 20px;
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+            border-radius: 12px;
+            margin: 0 32px 24px;
+            border: 2px solid #bfdbfe;
+            font-size: 14px;
+            color: #1e40af;
+            font-weight: 500;
+        }
+
+        .status-icon {
+            width: 32px;
+            height: 32px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #3b82f6;
+            font-size: 16px;
+        }
+
+        .modal-actions {
+            padding: 24px 32px 32px;
+            background: #f8fafc;
+            border-radius: 0 0 20px 20px;
+        }
+
+        .btn {
+            border: none;
+            border-radius: 12px;
+            padding: 14px 24px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .btn i {
+            font-size: 16px;
+        }
+
+        .btn-checkin {
+            width: 100%;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+            margin-bottom: 16px;
+        }
+
+        .btn-checkin:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-checkin:active {
+            transform: translateY(0);
+        }
+
+        .action-group {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn-save {
+            flex: 1;
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(106, 17, 203, 0.3);
+        }
+
+        .btn-save:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(106, 17, 203, 0.4);
+        }
+
+        .btn-save:active {
+            transform: translateY(0);
+        }
+
+        .btn-cancel {
+            flex: 1;
+            background: white;
+            color: #64748b;
+            border: 2px solid #e2e8f0;
+        }
+
+        .btn-cancel:hover {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+            color: #475569;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .settings-modal-content,
+            .deadman-modal-content {
+                width: 95%;
+                max-width: none;
+                border-radius: 16px;
+            }
+
+            .settings-header,
+            .modal-header {
+                padding: 32px 24px 20px;
+            }
+
+            .settings-icon,
+            .modal-icon {
+                width: 64px;
+                height: 64px;
+                font-size: 28px;
+            }
+
+            .settings-header h3,
+            .modal-header h3 {
+                font-size: 22px;
+            }
+
+            .settings-content {
+                padding: 24px 20px;
+            }
+
+            .settings-card {
+                padding: 16px;
+            }
+
+            .card-icon {
+                width: 48px;
+                height: 48px;
+                font-size: 20px;
+            }
+
+            .card-content h5 {
+                font-size: 15px;
+            }
+
+            .card-content p {
+                font-size: 12px;
+            }
+
+            .info-card,
+            .enable-switch,
+            .form-row,
+            .form-group,
+            .status-indicator,
+            .modal-actions {
+                margin-left: 20px;
+                margin-right: 20px;
+            }
+
+            .stages-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+
+            .action-group {
+                flex-direction: column;
+            }
+
+            .btn-cancel,
+            .btn-save {
+                width: 100%;
+            }
+        }
+        .tooltip {
+  position: relative;
+  cursor: pointer;
+}
+
+.tooltip::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: 130%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.85);
+  color: white;
+  padding: 5px 8px;
+  font-size: 11px;
+  border-radius: 5px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.tooltip:hover::after {
+  opacity: 1;
+}
+
+</style>
+</head>
+<body>
+    <div class="chat-container">
+        <!-- Sidebar (unchanged) -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="user-profile">
+                    <div class="profile-pic">{{ username[0].upper() }}</div>
+                    <div class="user-info">
+                        <h3>{{ username }}</h3>
+                        <p>Secure Chat</p>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <button id="deadmanSettingsBtn" class="icon-btn" title="Settings" onclick="openSettingsModal()">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                    <a href="{{ url_for('logout') }}" class="logout-btn">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="new-chat-form">
+                <input type="text" class="new-chat-input" id="newChatInput" placeholder="Enter new user username...">
+                <button class="new-chat-btn" onclick="startNewChat()">Start Chat</button>
+            </div>
+
+            <div class="search-bar">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" class="search-input" placeholder="Search users..." id="searchInput">
+            </div>
+
+            <div class="chat-list-header">
+                <span>Recent Conversations</span>
+                <span id="onlineCount">0 online</span>
+            </div>
+            <div class="chat-list" id="chatList">
+                <!-- Dynamic chat items will be loaded here -->
+            </div>
+        </div>
+        <!-- Main Chat Area -->
+        <div class="main-chat">
+            <div class="chat-header">
+                <i class="fas fa-bars back-btn" onclick="toggleSidebar()"></i>
+                <div class="chat-partner" id="chatPartner">
+                    <div class="partner-avatar" id="partnerAvatar"></div>
+                    <div class="partner-info">
+                        <h3 id="partnerName">Select a user to start chatting</h3>
+                        <p id="partnerStatus">Choose from the sidebar</p>
+                    </div>
+
+                    <div class="typing-indicator" id="typingIndicator">
+                        <span>is typing</span>
+                        <div class="typing-dots">
+                            <div class="typing-dot"></div>
+                            <div class="typing-dot"></div>
+                            <div class="typing-dot"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="security-indicator">
+                    <i class="fas fa-lock"></i>
+                    <span>End-to-end encrypted</span>
+                </div>
+            </div>
+
+            <div class="messages-container" id="messagesContainer">
+                <div class="no-chat-selected">
+                    <i class="fas fa-lock-open"></i>
+                    <h3>Welcome to Secure Chat</h3>
+                    <p>Select a user from the sidebar to begin your encrypted conversation</p>
+                    <div class="security-indicator">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>All messages are end-to-end encrypted</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FINAL WHATSAPP-STYLE CHAT INPUT WITH PREVIEW -->
+<div class="chat-input">
+
+    <!-- Preview Container -->
+    <div class="preview-container" id="attachmentPreview">
+        <!-- Cover Image Preview -->
+        <div class="preview-box" id="coverPreviewBox" style="display: none;">
+            <img id="coverPreviewImg" class="preview-img" alt="Cover">
+            <button class="remove-btn" onclick="removeCover()">×</button>
+            <div id="coverFileName" class="file-name"></div>
+            
+            <!-- Risk Analysis Badge -->
+            <div id="riskBadge" style="display: none; margin-top: 8px; padding: 12px; border-radius: 8px; font-size: 13px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span id="riskIcon" style="font-size: 20px;"></span>
+                    <div style="flex: 1;">
+                        <div id="riskMessage" style="font-weight: 600; margin-bottom: 4px;"></div>
+                        <div id="riskRecommendation" style="font-size: 12px; opacity: 0.9;"></div>
+                        <div id="riskDetails" style="display: none; margin-top: 8px; font-size: 11px; opacity: 0.8;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Hidden File Preview -->
+          <div class="preview-box" id="hiddenPreviewBox" style="display: none;">
+              <div class="preview-file">
+                  <i class="fas fa-file-alt file-icon"></i>
+              </div>
+              <button class="remove-btn" onclick="removeHidden()">×</button>
+              <div id="hiddenFileName" class="file-name"></div>
+          </div>
+      </div>
+    
+        <!-- Message Options Row (Hidden by default, shown when icon clicked) -->
+        <div class="message-options-row" id="messageOptionsRow" style="display: none;">
+          <!-- Time-Lock Option -->
+          <div class="option-group time-lock-option" onclick="toggleTimeLockOption()">
+            <input type="checkbox" id="timeLockCheckbox" onchange="toggleTimeLock()" onclick="event.stopPropagation()">
+            <label class="option-label" for="timeLockCheckbox">
+              <i class="fas fa-clock"></i>
+              <span>Time-Lock Message</span>
+            </label>
+          </div>
+
+          <!-- Burn After View Option -->
+          <div class="option-group burn-option">
+            <input type="checkbox" id="burnAfterViewCheckbox">
+            <label class="option-label" for="burnAfterViewCheckbox">
+              <i class="fas fa-fire"></i>
+              <span>Burn after viewing</span>
+            </label>
+          </div>
+        </div>
+
+        
+
+        <!-- Time-Lock Input (Shows when checkbox is checked) -->
+        <div class="time-input-container" id="timeLockInputContainer">
+          <input type="datetime-local" id="unlockAtInput" placeholder="Select unlock time">
+        </div>
+
+<!-- Input bar with icons -->
+<div class="message-input-row">
+
+    <!-- Upload Buttons -->
+    <div class="upload-buttons">
+
+        <div class="file-upload">
+    <input type="file" id="coverUpload" accept="image/*" required hidden>
+
+    <label for="coverUpload" class="upload-btn tooltip"
+           data-tip="Upload Cover Image"
+           style="background:#6a11cb; color:white;">
+        <i class="fas fa-image"></i>
+    </label>
+</div>
+
+<div class="file-upload">
+    <input type="file" id="hiddenUpload" accept="*/*" hidden>
+
+    <label for="hiddenUpload" class="upload-btn tooltip"
+           data-tip="Upload File to Hide"
+           style="background:#2575fc; color:white;">
+        <i class="fas fa-paperclip"></i>
+    </label>
+</div>
+
+    </div>
+
+    <!-- Options Toggle Button -->
+    <button class="options-toggle-btn tooltip"
+            id="optionsToggleBtn"
+            onclick="toggleMessageOptions()"
+            data-tip="Message Options"
+            type="button">
+        <i class="fas fa-sliders-h"></i>
+    </button>
+
+    <!-- Message Input -->
+    <textarea class="message-input" id="messageInput"
+              placeholder="Type your secure message..." rows="1"></textarea>
+
+    <!-- Send Button -->
+    <button class="send-btn tooltip"
+            onclick="sendMessage()"
+            data-tip="Send Message">
+        <i class="fas fa-paper-plane"></i>
+    </button>
+
+</div>
+</div>
+
+    <!-- ENHANCED MESSAGE INFO MODAL -->
+<div id="msgInfoModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.75); justify-content:center; align-items:center; z-index:2100;">
+  <div style="background:#111; color:#fff; width:360px; border-radius:16px; padding:20px; position:relative; box-shadow:0 10px 40px rgba(0,0,0,0.5);">
+    
+    <!-- Header -->
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; border-bottom:1px solid #333; padding-bottom:12px;">
+      <span style="font-size:16px; font-weight:600; color:#6a11cb;">Message Info</span>
+      <button onclick="closeMsgInfoModal()" style="border:none; background:transparent; color:#aaa; font-size:24px; cursor:pointer; line-height:1; transition:color 0.2s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#aaa'">×</button>
+    </div>
+
+    <!-- Message Details Section -->
+    <div style="margin-bottom:16px;">
+      <div style="font-size:11px; color:#888; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">Message Details</div>
+      
+      <!-- From/To -->
+      <div style="display:flex; align-items:center; gap:10px; padding:8px 0;">
+        <i class="fas fa-user" style="color:#6a11cb; width:16px;"></i>
+        <div style="flex:1;">
+          <div style="font-size:12px; color:#aaa;">From/To</div>
+          <div id="msgInfoFromTo" style="font-size:14px; font-weight:500; margin-top:2px;">-</div>
+        </div>
+      </div>
+
+      <!-- Message Type -->
+      <div style="display:flex; align-items:center; gap:10px; padding:8px 0;">
+        <i class="fas fa-file-alt" style="color:#6a11cb; width:16px;"></i>
+        <div style="flex:1;">
+          <div style="font-size:12px; color:#aaa;">Type</div>
+          <div id="msgInfoType" style="font-size:14px; font-weight:500; margin-top:2px;">-</div>
+        </div>
+      </div>
+
+      <!-- Security -->
+      <div style="display:flex; align-items:center; gap:10px; padding:8px 0;">
+        <i class="fas fa-lock" style="color:#25d366; width:16px;"></i>
+        <div style="flex:1;">
+          <div style="font-size:12px; color:#aaa;">Security</div>
+          <div id="msgInfoSecurity" style="font-size:14px; font-weight:500; margin-top:2px;">End-to-end encrypted</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Timestamps Section -->
+    <div style="border-top:1px solid #333; padding-top:16px;">
+      <div style="font-size:11px; color:#888; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">Timeline</div>
+
+      <!-- Sent -->
+      <div style="padding:10px 0; border-left:3px solid #6a11cb; padding-left:12px; margin-bottom:8px;">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+          <span style="color:#6a11cb;">✓</span>
+          <span style="font-size:13px; font-weight:500;">Sent</span>
+        </div>
+        <div id="msgInfoSentTime" style="font-size:12px; color:#ccc; margin-left:24px;">-</div>
+      </div>
+
+      <!-- Delivered -->
+      <div style="padding:10px 0; border-left:3px solid #8696a0; padding-left:12px; margin-bottom:8px;">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+          <span style="color:#8696a0;">✓✓</span>
+          <span style="font-size:13px; font-weight:500;">Delivered</span>
+        </div>
+        <div id="msgInfoDeliveredTime" style="font-size:12px; color:#ccc; margin-left:24px;">Not delivered</div>
+      </div>
+
+      <!-- Read -->
+      <div style="padding:10px 0; border-left:3px solid #25d366; padding-left:12px;">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+          <span style="color:#25d366;">✓✓</span>
+          <span style="font-size:13px; font-weight:500;">Read</span>
+        </div>
+        <div id="msgInfoReadTime" style="font-size:12px; color:#ccc; margin-left:24px;">Not read</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+     </div>
+
+ <!-- DECRYPT MODAL (automatic version - no key input) -->
+<div id="decryptModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); justify-content:center; align-items:center; z-index:3000;">
+  <div style="background:white; border-radius:16px; width:90%; max-width:460px; padding:28px; box-shadow:0 10px 40px rgba(0,0,0,0.35); position:relative; font-family:Segoe UI, sans-serif;">
+    
+    <!-- Close button -->
+    <button onclick="closeDecryptModal()" 
+            style="position:absolute; top:14px; right:18px; background:none; border:none; font-size:32px; color:#aaa; cursor:pointer; line-height:1;">
+      ×
+    </button>
+    
+    <h2 id="decryptModalTitle" style="margin:0 0 20px; font-size:24px; text-align: center; color:#6a11cb; font-weight:600;">
+      Verifying Integrity
+    </h2>
+    
+    <!-- No input field or "Enter the key" text anymore -->
+    
+    <!-- Result area (shows loading → decrypted content or error) -->
+    <div id="decryptResult" style="margin-top:24px; min-height:100px; font-size:15px; line-height:1.5; color:#333; text-align: center;">
+
+      <!-- Auto-filled by JS -->
+    </div>
+
+    <!-- Burn confirmation (shown only if burnable) -->
+    <div id="burnConfirmArea" style="display:none; margin-top:28px; text-align:center; padding-top:20px; border-top:1px solid #eee;">
+      <p style="color:#e74c3c; font-weight:600; margin-bottom:16px; font-size:15px;">
+        This message is set to burn after viewing.<br>
+        It will be permanently deleted after you confirm.
+      </p>
+      
+      <button onclick="confirmAndDelete()" 
+              style="background:#e74c3c; color:white; padding:12px 32px; border:none; border-radius:10px; font-size:16px; font-weight:bold; cursor:pointer; margin-right:12px;">
+        I've read it – Delete now
+      </button>
+      
+      <button onclick="closeDecryptModal()" 
+              style="background:#95a5a6; color:white; padding:12px 32px; border:none; border-radius:10px; font-size:16px; cursor:pointer;">
+        Close (keep for now)
+      </button>
+    </div>
+
+  </div>
+</div>
+
+
+
+<!-- Settings Modal -->
+<div id="settingsModal" class="settings-modal" style="display:none;">
+    <div class="settings-modal-content">
+        <button class="modal-close-btn" onclick="closeSettingsModal()" aria-label="Close">
+            <i class="fas fa-times"></i>
+        </button>
+
+        <div class="settings-header">
+            <button class="settings-close-btn" onclick="closeSettingsModal()" title="Close Settings">
+                ×
+            </button>
+            <div class="settings-icon">
+                <i class="fas fa-cog"></i>
+            </div>
+            <h3>Settings</h3>
+            <p class="settings-subtitle">Manage your security and privacy preferences</p>
+        </div>
+
+        <div class="settings-content">
+            <div class="settings-section">
+                <h4 class="section-title">Security Features</h4>
+
+                <div class="settings-card" onclick="openDeadmanModalFromSettings()">
+                    <div class="card-icon deadman-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <div class="card-content">
+                        <h5>Dead Man's Switch</h5>
+                        <p>Automated safety protocol for emergency situations</p>
+                    </div>
+                    <div class="card-arrow">
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                </div>
+
+                <div class="settings-card" onclick="window.location.href='/forget_password'">
+                    <div class="card-icon">
+                        <i class="fas fa-key"></i>
+                    </div>
+                    <div class="card-content">
+                        <h5>Change Password</h5>
+                        <p>Update your account password</p>
+                    </div>
+                    <div class="card-arrow">
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                </div>
+
+                <div class="settings-card disabled">
+                    <div class="card-icon">
+                        <i class="fas fa-bell"></i>
+                    </div>
+                    <div class="card-content">
+                        <h5>Notifications</h5>
+                        <p>Coming soon...</p>
+                    </div>
+                    <div class="card-arrow">
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h4 class="section-title">Privacy & Data</h4>
+
+                <div class="settings-card" onclick="openTermsModal()">
+                    <div class="card-icon">
+                        <i class="fas fa-file-contract"></i>
+                    </div>
+                    <div class="card-content">
+                        <h5>Terms & Conditions</h5>
+                        <p>Privacy policy and terms of service</p>
+                    </div>
+                    <div class="card-arrow">
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="deadmanModal" class="deadman-modal" style="display:none;">
+        <div class="deadman-modal-content">
+            <button class="modal-close-btn" onclick="closeDeadmanModal()" aria-label="Close">
+                <i class="fas fa-times"></i>
+            </button>
+
+            <div class="modal-header">
+                <div class="modal-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h3>Digital Dead Man's Switch</h3>
+                <p class="modal-subtitle">Automated safety protocol for emergency situations</p>
+            </div>
+
+            <div class="info-card">
+                <div class="info-card-header">
+                    <i class="fas fa-info-circle"></i>
+                    <strong>How It Works</strong>
+                </div>
+                <p>If you stop checking in, the system assumes you're not in control and can trigger emergency actions.</p>
+                <div class="stages-container">
+                    <div class="stage">
+                        <span class="stage-icon">✓</span>
+                        <span class="stage-label">Active</span>
+                    </div>
+                    <div class="stage">
+                        <span class="stage-icon">⏱</span>
+                        <span class="stage-label">Overdue</span>
+                    </div>
+                    <div class="stage">
+                        <span class="stage-icon">⚡</span>
+                        <span class="stage-label">Grace</span>
+                    </div>
+                    <div class="stage">
+                        <span class="stage-icon">🚨</span>
+                        <span class="stage-label">Emergency</span>
+                    </div>
+                </div>
+            </div>
+
+            <label class="enable-switch">
+                <input type="checkbox" id="deadmanEnableCheckbox" />
+                <span class="switch-slider"></span>
+                <span class="switch-label">Enable Dead Man's Switch for my account</span>
+            </label>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-clock"></i>
+                        Check-in Interval
+                    </label>
+                    <div class="input-wrapper">
+                        <input type="number" id="checkinIntervalInput" 
+                               min="1" max="36" step="1" 
+                               class="form-input" 
+                               placeholder="24" />
+                        <span class="input-suffix">hours</span>
+                    </div>
+                    <small class="help-text">How often you need to check in (max 36 hours)</small>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-hourglass-half"></i>
+                        Grace Period
+                    </label>
+                    <div class="input-wrapper">
+                        <input type="number" id="gracePeriodInput" 
+                               min="1" max="10" step="1" 
+                               class="form-input" 
+                               placeholder="6" />
+                        <span class="input-suffix">hours</span>
+                    </div>
+                    <small class="help-text">Extra buffer time before emergency (max 10 hours)</small>
+                </div>
+            </div>
+
+
+
+            <div id="deadmanStatusLine" class="status-indicator">
+                <div class="status-icon">
+                    <i class="fas fa-spinner fa-spin"></i>
+                </div>
+                <span>Loading status...</span>
+            </div>
+
+            <div class="modal-actions">
+                <button onclick="sendDeadmanCheckin()" class="btn btn-checkin">
+                    <i class="fas fa-heart-pulse"></i>
+                    I'm Safe - Check In Now
+                </button>
+                <div class="action-group">
+                    <button onclick="saveDeadmanConfig()" class="btn btn-save">
+                        <i class="fas fa-save"></i>
+                        Save Settings
+                    </button>
+                    <button onclick="closeDeadmanModal()" class="btn btn-cancel">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Risk Analysis Modal - Redesigned to show results inside -->
+<div id="riskAnalysisModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); justify-content:center; align-items:center; z-index:3500;">
+  <div style="background:white; border-radius:16px; width:90%; max-width:500px; padding:28px; box-shadow:0 10px 40px rgba(0,0,0,0.4); position:relative; max-height:90vh; overflow-y:auto;">
+    
+    <!-- Initial Prompt View -->
+    <div id="modalPromptView">
+      <!-- Header -->
+      <div style="text-align:center; margin-bottom:20px;">
+        <div style="font-size:48px; margin-bottom:10px;">🔍</div>
+        <h2 style="margin:0; font-size:22px; color:#6a11cb; font-weight:600;">Image Security Analysis</h2>
+        <p style="margin:8px 0 0; font-size:14px; color:#666; line-height:1.5;">
+          Would you like to check if this image is safe for hiding your encrypted data?
+        </p>
+      </div>
+
+      <!-- Info Box -->
+      <div style="background:#f8f9fa; border-left:4px solid #6a11cb; padding:12px 16px; border-radius:6px; margin-bottom:24px;">
+        <div style="font-size:13px; color:#555; line-height:1.6;">
+          <strong style="color:#6a11cb;">What we check:</strong><br>
+          • Image resolution & size<br>
+          • Color complexity & variation<br>
+          • Texture & detail levels<br>
+          <div style="margin-top:8px; font-size:12px; opacity:0.8;">
+            ⏱️ Takes only 1-2 seconds
+          </div>
+        </div>
+      </div>
+
+      <!-- Buttons -->
+      <div style="display:flex; gap:12px;">
+        <button onclick="skipRiskAnalysisModal()" 
+                style="flex:1; padding:14px; background:#e0e0e0; color:#333; border:none; border-radius:10px; font-size:15px; font-weight:600; cursor:pointer; transition:all 0.2s;">
+          Skip & Send
+        </button>
+        <button onclick="runRiskAnalysisModal()" 
+                style="flex:1; padding:14px; background:linear-gradient(to right, #6a11cb, #2575fc); color:white; border:none; border-radius:10px; font-size:15px; font-weight:600; cursor:pointer; transition:all 0.2s; box-shadow:0 4px 12px rgba(106,17,203,0.3);">
+          🔍 Analyze Image
+        </button>
+      </div>
+
+      <!-- Small disclaimer -->
+      <div style="text-align:center; margin-top:16px; font-size:11px; color:#999;">
+        Analysis helps you choose safer images for steganography
+      </div>
+    </div>
+
+    <!-- Loading View -->
+    <div id="modalLoadingView" style="display:none;">
+      <div style="text-align:center; padding:40px 20px;">
+        <div style="font-size:48px; margin-bottom:16px;">⏳</div>
+        <h3 style="margin:0 0 12px 0; color:#6a11cb; font-size:20px;">Analyzing Your Image</h3>
+        <p style="margin:0; color:#666; font-size:14px;">This will only take a moment...</p>
+        <div class="loading" style="margin:24px auto; display:inline-block;"></div>
+      </div>
+    </div>
+
+    <!-- Result View -->
+    <div id="modalResultView" style="display:none;">
+      <!-- Result will be dynamically inserted here -->
+    </div>
+
+  </div>
+</div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+
+  <script>
+
+    // Add CSS for animations
+
+    const style = document.createElement('style');
+    style.textContent = `
+    @keyframes destructFlash {
+        0% { opacity: 0; transform: scale(0.8); }
+        50% { opacity: 1; transform: scale(1.1); }
+        100% { opacity: 0.9; transform: scale(1); }
+    }
+
+    @keyframes fadeOut {
+        to { opacity: 0; }
+    }
+
+    .screenshot-protected {
+        position: relative;
+    }
+
+    .screenshot-warning {
+        position: absolute;
+        top: -30px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #ff4757;
+        color: white;
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+        white-space: nowrap;
+        pointer-events: none;
+        animation: warningPulse 2s infinite;
+    }
+
+    @keyframes warningPulse {
+        0%, 100% { opacity: 1; transform: translateX(-50%) translateY(0); }
+        50% { opacity: 0.7; transform: translateX(-50%) translateY(-2px); }
+    }
+`;
+document.head.appendChild(style);
+    let selectedUser = null;
+    let currentChatUser = null;
+    let typingTimer = null;
+    const socket = io();
+    const username = '{{ username }}';
+
+    // Time-lock polling intervals map (messageId â†’ intervalId)
+    const lockPollIntervals = new Map();
+
+    socket.emit('join', { username: username });
+
+    document.addEventListener('DOMContentLoaded', function () {
+      // ═══════════════════════════════════════════════════════
+      // 🛡️ COMPREHENSIVE SCREENSHOT PROTECTION
+      // ═══════════════════════════════════════════════════════
+      
+      // Function to show screenshot warning popup
+      function showScreenshotWarning() {
+        // Remove any existing warning
+        const existingWarning = document.getElementById('screenshotWarning');
+        if (existingWarning) {
+          existingWarning.remove();
+        }
+
+        const warning = document.createElement('div');
+        warning.id = 'screenshotWarning';
+        warning.style.cssText = `
+          position: fixed;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          background: linear-gradient(135deg, #e74c3c, #c0392b);
+          color: white;
+          padding: 30px 40px;
+          border-radius: 15px;
+          font-size: 18px;
+          font-weight: bold;
+          z-index: 999999;
+          box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+          text-align: center;
+          animation: warningPulse 0.5s ease-out;
+          min-width: 300px;
+        `;
+        warning.innerHTML = `
+          <div style="font-size: 48px; margin-bottom: 15px;">🚫</div>
+          <div style="font-size: 22px; margin-bottom: 10px;">Screenshot Blocked!</div>
+          <div style="font-size: 14px; font-weight: normal; opacity: 0.9;">
+            Screenshots are not allowed in this secure chat
+          </div>
+        `;
+        
+        document.body.appendChild(warning);
+        
+        // Auto-remove after 3 seconds
+        setTimeout(() => {
+          if (warning.parentNode) {
+            warning.style.animation = 'fadeOut 0.5s ease-out';
+            setTimeout(() => warning.remove(), 500);
+          }
+        }, 3000);
+      }
+
+      // Add animation styles
+      const style = document.createElement('style');
+      style.textContent = `
+        @keyframes warningPulse {
+          0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
+          50% { transform: translate(-50%, -50%) scale(1.05); }
+          100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+        @keyframes fadeOut {
+          to { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+        }
+      `;
+      document.head.appendChild(style);
+
+      // Disable right-click context menu
+      document.addEventListener('contextmenu', function(e) {
+        e.preventDefault();
+        showScreenshotWarning();
+        return false;
+      });
+
+      // Disable keyboard screenshot shortcuts
+      document.addEventListener('keydown', function(e) {
+        // Prevent PrintScreen
+        if (e.key === 'PrintScreen' || e.keyCode === 44 || e.code === 'PrintScreen') {
+          e.preventDefault();
+          e.stopPropagation();
+          e.stopImmediatePropagation();
+          showScreenshotWarning();
+          return false;
+        }
+        
+        // Prevent Cmd/Ctrl + Shift + 3/4/5 (Mac screenshots)
+        if ((e.metaKey || e.ctrlKey) && e.shiftKey && ['3', '4', '5'].includes(e.key)) {
+          e.preventDefault();
+          e.stopPropagation();
+          showScreenshotWarning();
+          return false;
+        }
+        
+        // Prevent Windows + PrintScreen / Windows + Shift + S (Snipping Tool)
+        if (e.metaKey && (e.key === 'PrintScreen' || e.keyCode === 44 || (e.shiftKey && (e.key === 's' || e.key === 'S')))) {
+          e.preventDefault();
+          e.stopPropagation();
+          showScreenshotWarning();
+          return false;
+        }
+        
+        // Prevent F12 (DevTools) - silently without popup
+        if (e.key === 'F12' || e.keyCode === 123) {
+          e.preventDefault();
+          return false;
+        }
+        
+        // Prevent Ctrl+Shift+I / Cmd+Shift+I (DevTools) - silently
+        if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'I' || e.keyCode === 73)) {
+          e.preventDefault();
+          return false;
+        }
+        
+        // Prevent Ctrl+Shift+C / Cmd+Shift+C (Inspect Element) - silently
+        if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'C' || e.keyCode === 67)) {
+          e.preventDefault();
+          return false;
+        }
+        
+        // Prevent Ctrl+U / Cmd+U (View Source) - silently
+        if ((e.ctrlKey || e.metaKey) && (e.key === 'U' || e.keyCode === 85)) {
+          e.preventDefault();
+          return false;
+        }
+
+        // Prevent Ctrl+S / Cmd+S (Save Page) - silently
+        if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'S') && !e.shiftKey) {
+          e.preventDefault();
+          return false;
+        }
+      }, true); // Use capture phase
+
+      // Additional keyup listener for PrintScreen (some browsers only detect on keyup)
+      document.addEventListener('keyup', function(e) {
+        if (e.key === 'PrintScreen' || e.keyCode === 44 || e.code === 'PrintScreen') {
+          e.preventDefault();
+          e.stopPropagation();
+          e.stopImmediatePropagation();
+          showScreenshotWarning();
+          return false;
+        }
+      }, true);
+
+      // Detect window blur that might indicate screenshot tool
+      let lastBlur = 0;
+      window.addEventListener('blur', function() {
+        const now = Date.now();
+        // If blur happens very quickly (< 100ms from last), might be PrintScreen
+        if (now - lastBlur < 100) {
+          setTimeout(showScreenshotWarning, 50);
+        }
+        lastBlur = now;
+      });
+
+      // Monitor clipboard for pasted images (screenshot detection)
+      document.addEventListener('paste', function(e) {
+        if (e.clipboardData && e.clipboardData.items) {
+          for (let i = 0; i < e.clipboardData.items.length; i++) {
+            if (e.clipboardData.items[i].type.indexOf('image') !== -1) {
+              e.preventDefault();
+              showScreenshotWarning();
+              return false;
+            }
+          }
+        }
+      });
+
+      // Add subtle watermark overlay
+      const watermark = document.createElement('div');
+      watermark.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        pointer-events: none;
+        z-index: 9997;
+        background-image: repeating-linear-gradient(
+          45deg,
+          transparent,
+          transparent 150px,
+          rgba(106, 17, 203, 0.015) 150px,
+          rgba(106, 17, 203, 0.015) 300px
+        );
+        user-select: none;
+      `;
+      document.body.appendChild(watermark);
+
+      // ═══════════════════════════════════════════════════════
+      // END SCREENSHOT PROTECTION
+      // ═══════════════════════════════════════════════════════
+
+      loadConversations();
+
+      // Set minimum datetime for time-lock to current time + 1 minute
+      const now = new Date();
+      now.setMinutes(now.getMinutes() + 1);
+      const minDateTime = now.toISOString().slice(0, 16);
+      document.getElementById('unlockAtInput').min = minDateTime;
+    });
+
+    function toggleTimeLock() {
+      const checkbox = document.getElementById('timeLockCheckbox');
+      const container = document.getElementById('timeLockInputContainer');
+
+      if (checkbox.checked) {
+        container.classList.add('active');
+      } else {
+        container.classList.remove('active');
+        document.getElementById('unlockAtInput').value = '';
+      }
+      
+      // Update badge on toggle button
+      updateOptionsToggleBadge();
+    }
+
+    // Function for clicking on the option group
+    function toggleTimeLockOption() {
+      const checkbox = document.getElementById('timeLockCheckbox');
+      checkbox.checked = !checkbox.checked;
+      toggleTimeLock();
+    }
+
+    // Toggle message options visibility
+    function toggleMessageOptions() {
+      const optionsRow = document.getElementById('messageOptionsRow');
+      const toggleBtn = document.getElementById('optionsToggleBtn');
+      
+      if (optionsRow.style.display === 'none' || optionsRow.style.display === '') {
+        optionsRow.style.display = 'flex';
+        toggleBtn.classList.add('active');
+      } else {
+        optionsRow.style.display = 'none';
+        toggleBtn.classList.remove('active');
+      }
+    }
+
+    // Update badge on toggle button when options are active
+    function updateOptionsToggleBadge() {
+      const toggleBtn = document.getElementById('optionsToggleBtn');
+      const timeLockChecked = document.getElementById('timeLockCheckbox').checked;
+      const burnChecked = document.getElementById('burnAfterViewCheckbox').checked;
+      
+      if (timeLockChecked || burnChecked) {
+        toggleBtn.classList.add('has-active-options');
+      } else {
+        toggleBtn.classList.remove('has-active-options');
+      }
+    }
+
+    // Add change listeners to checkboxes to update badge
+    document.addEventListener('DOMContentLoaded', function() {
+      const timeLockCheckbox = document.getElementById('timeLockCheckbox');
+      const burnCheckbox = document.getElementById('burnAfterViewCheckbox');
+      
+      if (timeLockCheckbox) {
+        timeLockCheckbox.addEventListener('change', updateOptionsToggleBadge);
+      }
+      if (burnCheckbox) {
+        burnCheckbox.addEventListener('change', updateOptionsToggleBadge);
+      }
+    });
+
+
+        function loadConversations() {
+            fetch('/api/conversations')
+                .then(response => {
+                    if (!response.ok) throw new Error('Failed to load conversations');
+                    return response.json();
+                })
+                .then(conversations => {
+                    const chatList = document.getElementById('chatList');
+                    chatList.innerHTML = '';
+                    conversations.forEach(conv => {
+    const chatItem = document.createElement('div');
+    chatItem.className = 'chat-item';
+    chatItem.dataset.user = conv.username;  // Changed from conv.partner
+    let badge = '';
+    if (conv.unread_count > 0) {
+        badge = `<div class="unread-badge">${conv.unread_count}</div>`;
+    }
+    
+    // Format the timestamp to show last message time
+    let timeText = 'Just now';
+    if (conv.latest_timestamp) {
+        const msgDate = new Date(conv.latest_timestamp);
+        const now = new Date();
+        const diffMs = now - msgDate;
+        const diffMins = Math.floor(diffMs / 60000);
+        const diffHours = Math.floor(diffMs / 3600000);
+        const diffDays = Math.floor(diffMs / 86400000);
+        
+        if (diffMins < 1) {
+            timeText = 'Just now';
+        } else if (diffMins < 60) {
+            timeText = `${diffMins}m ago`;
+        } else if (diffHours < 24) {
+            timeText = `${diffHours}h ago`;
+        } else if (diffDays < 7) {
+            timeText = `${diffDays}d ago`;
+        } else {
+            timeText = msgDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        }
+    }
+    
+    chatItem.innerHTML = `
+        <div class="chat-avatar">${conv.username.charAt(0).toUpperCase()}</div>
+        <div class="chat-info">
+            <div class="chat-name">${conv.username}</div>
+            <div class="chat-preview">Click to start chatting</div>
+        </div>
+        <div class="chat-time">${timeText}</div>
+        ${badge}
+    `;
+    chatItem.onclick = () => selectChat(conv.username);  // Already correct
+    chatList.appendChild(chatItem);
+});
+                })
+                .catch(error => console.error('Error loading conversations:', error));
+        }
+
+        function startNewChat() {
+            const newUsername = document.getElementById('newChatInput').value.trim();
+            if (!newUsername || newUsername === username) {
+                alert('Please enter a valid username different from your own.');
+                return;
+            }
+            fetch(`/api/users?username=${newUsername}`)
+                .then(response => response.json())
+                .then(user => {
+                    if (user.username) {
+                        selectChat(user.username);
+                        document.getElementById('newChatInput').value = '';
+                        loadConversations();  // Refresh list after adding new chat
+                    } else {
+                        alert('User not found.');
+                    }
+                })
+                .catch(error => console.error('Error checking user:', error));
+        }
+
+        function selectChat(partner) {
+    console.log('Opening chat with:', partner);  // Debug log
+    
+    selectedUser = partner;  // ADDED
+    currentChatUser = partner;
+    
+    //  MOVED TO TOP - Hide placeholder immediately
+    const noChatSelected = document.querySelector('.no-chat-selected');
+    if (noChatSelected) noChatSelected.style.display = 'none';
+    
+    // Show chat input area
+    const chatInput = document.querySelector('.chat-input');
+    if (chatInput) chatInput.classList.add('active');
+    
+    // Highlight selected chat
+    document.querySelectorAll('.chat-item').forEach(item => item.classList.remove('active'));
+    const chatItem = document.querySelector(`.chat-item[data-user="${partner}"]`);
+    if (chatItem) chatItem.classList.add('active');
+    
+    // Update header
+    document.getElementById('partnerName').textContent = partner;
+    document.getElementById('partnerAvatar').textContent = partner.charAt(0).toUpperCase();
+    document.getElementById('partnerStatus').textContent = 'Online';
+
+    // Clear and load messages
+    const container = document.getElementById('messagesContainer');
+    container.innerHTML = '';
+    loadMessages(partner);
+    
+    // Mark as read
+    fetch('/api/mark_read', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ partner: partner })
+    }).then(() => loadConversations());
+    
+    // Hide sidebar on mobile
+    if (window.innerWidth < 768) {
+        const sidebar = document.getElementById('sidebar');
+        if (sidebar) sidebar.classList.remove('open');
+    }
+}
+
+        // Replace the loadMessages function with this improved version:
+
+function loadMessages(with_user) {
+    fetch(`/api/messages?with=${with_user}`)
+        .then(response => {
+            if (!response.ok) throw new Error('Failed to load messages: ' + response.status);
+            return response.json();
+        })
+        .then(messages => {
+            const container = document.getElementById('messagesContainer');
+            container.innerHTML = '';
+            if (messages.length === 0) {
+                container.innerHTML = '<div>No messages yet. Start the conversation!</div>';
+            } else {
+                messages.forEach(msg => addMessageToUI(msg, msg.sender === username));
+            }
+
+            // Scroll to bottom after images load
+            scrollToBottom();
+        })
+        .catch(error => {
+            console.error('Error loading messages:', error);
+            alert('Error loading messages: ' + error.message);
+        });
+}
+
+// Add this new function to handle scrolling after images load:
+function scrollToBottom() {
+    const container = document.getElementById('messagesContainer');
+    
+    // Get all images in the container
+    const images = container.querySelectorAll('img');
+    
+    if (images.length === 0) {
+        // No images, scroll immediately
+        container.scrollTop = container.scrollHeight;
+        return;
+    }
+    
+    // Wait for all images to load
+    let loadedCount = 0;
+    const totalImages = images.length;
+    
+    const checkAndScroll = () => {
+        loadedCount++;
+        if (loadedCount === totalImages) {
+            // All images loaded, now scroll
+            setTimeout(() => {
+                container.scrollTop = container.scrollHeight;
+            }, 100);
+        }
+    };
+    
+    images.forEach(img => {
+        if (img.complete) {
+            // Image already loaded
+            checkAndScroll();
+        } else {
+            // Wait for image to load
+            img.addEventListener('load', checkAndScroll);
+            img.addEventListener('error', checkAndScroll); // Also handle errors
+        }
+    });
+}
+        // UPDATED sendMessage() â€“ uses new upload IDs
+function sendMessage() {
+    const input = document.getElementById('messageInput');
+    const coverInput = document.getElementById('coverUpload');
+    const hiddenInput = document.getElementById('hiddenUpload');
+    const burnCheckbox = document.getElementById('burnAfterViewCheckbox');
+    // Screenshot protection is now MANDATORY - always enabled
+    if (!currentChatUser) {
+        alert("Please select a chat first.");
+        return;
+    }
+
+    const message = (input?.value || "").trim();
+    const coverFile = coverInput?.files?.[0];
+    const hiddenFile = hiddenInput?.files?.[0];
+
+    if (!coverFile) {
+        alert("Cover image is required.");
+        return;
+    }
+
+    if (hiddenFile && hiddenFile.size > 500 * 1024) {
+        alert("Hidden file is too large (max 500 KB allowed).");
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('message', message);
+    formData.append('recipient', currentChatUser);
+    formData.append('cover_image', coverFile);
+    if (hiddenFile) {
+        formData.append('hidden_file', hiddenFile);
+    }
+
+    // ── Burn after view flag ──
+    const burnEnabled = burnCheckbox?.checked === true;
+    formData.append('burn_after_view', burnEnabled ? 'true' : 'false');
+
+    // Visual feedback (optional but helpful)
+    const sendBtn = document.querySelector('.send-btn');
+    if (sendBtn) {
+        sendBtn.disabled = true;
+        sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    }
+
+    // ✨ ADD THIS: Check if time-lock is enabled
+    const timeLockCheckbox = document.getElementById('timeLockCheckbox');
+    if (timeLockCheckbox && timeLockCheckbox.checked) {
+        const unlockTime = document.getElementById('unlockAtInput').value;
+        if (unlockTime) {
+            formData.append('unlock_at', unlockTime);
+        }
+    }
+
+    fetch('/api/send_message', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(err => { throw new Error(err.error || 'Server error'); });
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (!data.success) {
+            throw new Error(data.error || 'Send failed');
+        }
+
+        // Success path
+
+        // Clear everything
+        if (input) input.value = '';
+        if (coverInput) coverInput.value = '';
+        if (hiddenInput) hiddenInput.value = '';
+        if (burnCheckbox) burnCheckbox.checked = false;
+
+        // Reset time-lock options
+        const timeLockCheckbox = document.getElementById('timeLockCheckbox');
+        const unlockAtInput = document.getElementById('unlockAtInput');
+        const timeLockInputContainer = document.getElementById('timeLockInputContainer');
+        
+        if (timeLockCheckbox) timeLockCheckbox.checked = false;
+        if (unlockAtInput) unlockAtInput.value = '';
+        if (timeLockInputContainer) timeLockInputContainer.classList.remove('active');
+        
+        // Hide message options row and reset toggle button
+        const messageOptionsRow = document.getElementById('messageOptionsRow');
+        const optionsToggleBtn = document.getElementById('optionsToggleBtn');
+        
+        if (messageOptionsRow) messageOptionsRow.style.display = 'none';
+        if (optionsToggleBtn) {
+            optionsToggleBtn.classList.remove('active');
+            optionsToggleBtn.classList.remove('has-active-options');
+        }
+
+        // Hide previews
+        ['coverPreviewBox', 'hiddenPreviewBox'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.style.display = 'none';
+        });
+
+        // Reset preview images/names if they exist
+        ['coverPreviewImg', 'coverFileName', 'hiddenFileName'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                if (el.tagName === 'IMG') el.src = '';
+                else el.textContent = '';
+            }
+        });
+
+        // Refresh UI
+        loadMessages(currentChatUser);
+        loadConversations();           // optional â€“ good practice
+
+        alert('Message sent successfully!');
+    })
+    .catch(err => {
+        console.error('Send failed:', err);
+        alert('Error: ' + (err.message || 'Could not send message'));
+    })
+    .finally(() => {
+        // Re-enable button
+        if (sendBtn) {
+            sendBtn.disabled = false;
+            sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i>';
+        }
+    });
+}
+      
+// Modified cover upload handler - SHOWS MODAL FIRST
+document.getElementById('coverUpload').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    const previewBox = document.getElementById('coverPreviewBox');
+    const previewImg = document.getElementById('coverPreviewImg');
+    const nameDisplay = document.getElementById('coverFileName');
+    const riskBadge = document.getElementById('riskBadge');
+    
+    if (file) {
+        // Store the file globally
+        currentUploadedFile = file;
+        
+        // Show preview
+        previewImg.src = URL.createObjectURL(file);
+        nameDisplay.textContent = file.name.length > 10 ? file.name.substring(0, 10) + '...' : file.name;
+        previewBox.style.display = 'block';
+        
+        // Hide risk badge initially
+        riskBadge.style.display = 'none';
+        
+        // Show the confirmation modal
+        openRiskAnalysisModal();
+    } else {
+        currentUploadedFile = null;
+        previewBox.style.display = 'none';
+        previewImg.src = '';
+        nameDisplay.textContent = '';
+        riskBadge.style.display = 'none';
+    }
+});
+
+
+// Hidden file upload handler
+document.getElementById('hiddenUpload').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    const previewBox = document.getElementById('hiddenPreviewBox');
+    const nameDisplay = document.getElementById('hiddenFileName');
+   
+    if (file) {
+        const fileName = file.name.length > 10 ? file.name.substring(0, 10) + '...' : file.name;
+        nameDisplay.textContent = fileName;
+        previewBox.style.display = 'block';
+    } else {
+        previewBox.style.display = 'none';
+        nameDisplay.textContent = '';
+    }
+});
+
+
+// Remove cover image function
+function removeCover() {
+    const input = document.getElementById('coverUpload');
+    input.value = '';
+    document.getElementById('coverPreviewBox').style.display = 'none';
+    document.getElementById('coverPreviewImg').src = '';
+    document.getElementById('coverFileName').textContent = '';
+}
+
+// Remove hidden file function
+function removeHidden() {
+    const input = document.getElementById('hiddenUpload');
+    input.value = '';
+    document.getElementById('hiddenPreviewBox').style.display = 'none';
+    document.getElementById('hiddenFileName').textContent = '';
+}
+
+// ========== RISK ANALYSIS MODAL FUNCTIONS ==========
+
+// Global variable to track current uploaded file
+let currentUploadedFile = null;
+
+function openRiskAnalysisModal() {
+    const modal = document.getElementById('riskAnalysisModal');
+    
+    // Reset to initial prompt view
+    document.getElementById('modalPromptView').style.display = 'block';
+    document.getElementById('modalLoadingView').style.display = 'none';
+    document.getElementById('modalResultView').style.display = 'none';
+    
+    modal.style.display = 'flex';
+}
+
+function closeRiskAnalysisModal() {
+    const modal = document.getElementById('riskAnalysisModal');
+    modal.style.display = 'none';
+    
+    // Reset views for next time
+    document.getElementById('modalPromptView').style.display = 'block';
+    document.getElementById('modalLoadingView').style.display = 'none';
+    document.getElementById('modalResultView').style.display = 'none';
+}
+
+function skipRiskAnalysisModal() {
+    closeRiskAnalysisModal();
+    
+    const riskBadge = document.getElementById('riskBadge');
+    const riskIcon = document.getElementById('riskIcon');
+    const riskMessage = document.getElementById('riskMessage');
+    const riskRecommendation = document.getElementById('riskRecommendation');
+    const riskDetails = document.getElementById('riskDetails');
+    
+    riskIcon.textContent = '✅';
+    riskMessage.textContent = 'Image ready';
+    riskRecommendation.textContent = 'Analysis skipped';
+    riskDetails.style.display = 'none';
+    
+    riskBadge.className = '';
+    riskBadge.style.background = '#e8f4f8';
+    riskBadge.style.border = '1px solid #6a11cb';
+    riskBadge.style.color = '#6a11cb';
+    riskBadge.style.display = 'block';
+    
+    setTimeout(() => { riskBadge.style.display = 'none'; }, 3000);
+}
+
+async function runRiskAnalysisModal() {
+    if (!currentUploadedFile) {
+        closeRiskAnalysisModal();
+        return;
+    }
+    
+    // Hide prompt view, show loading view
+    document.getElementById('modalPromptView').style.display = 'none';
+    document.getElementById('modalLoadingView').style.display = 'block';
+    document.getElementById('modalResultView').style.display = 'none';
+    
+    try {
+        const formData = new FormData();
+        formData.append('image', currentUploadedFile);
+        
+        const response = await fetch('/api/analyze_image', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (data.success && data.analysis) {
+            showRiskAnalysisInModal(data.analysis);
+        } else {
+            showModalError('Unable to analyze image. Please try again.');
+        }
+    } catch (error) {
+        console.error('Risk analysis error:', error);
+        showModalError('Network error. Please check your connection and try again.');
+    }
+}
+
+// ========== RISK SCORE â†’ RECOMMENDATION ENGINE ==========
+function showRiskAnalysisInModal(analysis) {
+    // Hide loading, show result
+    document.getElementById('modalLoadingView').style.display = 'none';
+    document.getElementById('modalResultView').style.display = 'block';
+    
+    // Determine colors based on risk level
+    let bgColor, borderColor;
+    if (analysis.risk === 'low') {
+        bgColor = '#d4edda';
+        borderColor = '#28a745';
+    } else if (analysis.risk === 'medium') {
+        bgColor = '#fff3cd';
+        borderColor = '#ffc107';
+    } else {
+        bgColor = '#f8d7da';
+        borderColor = '#dc3545';
+    }
+    
+    // Build the result HTML with RECOMMENDATION
+    let resultHTML = `
+        <div style="text-align:center; margin-bottom:24px;">
+            <div style="font-size:64px; margin-bottom:12px;">${analysis.icon}</div>
+            <h2 style="margin:0 0 8px 0; font-size:24px; color:#333; font-weight:700;">${analysis.message}</h2>
+            <p style="margin:0; font-size:15px; color:#666; line-height:1.5;">${analysis.recommendation}</p>
+        </div>
+        
+        <!-- Analysis Details -->
+        <div style="background:${bgColor}; border:2px solid ${borderColor}; border-radius:12px; padding:20px; margin-bottom:20px;">
+            <div style="font-weight:700; font-size:15px; color:#333; margin-bottom:12px; display:flex; align-items:center; gap:8px;">
+                <span style="font-size:20px;">>📊</span>
+                Analysis Details
+            </div>
+    `;
+    
+    // Add reasons if available - server already includes emojis
+    if (analysis.reasons && analysis.reasons.length > 0) {
+        analysis.reasons.forEach(reason => {
+            resultHTML += `
+                <div style="padding:6px 0; font-size:14px; color:#333; line-height:1.6;">
+                    ${reason}
+                </div>
+            `;
+        });
+    }
+    
+    resultHTML += `
+        </div>
+        
+        <!-- Action Button -->
+        <div style="text-align:center;">
+            <button onclick="closeRiskAnalysisModal()" style="padding:16px 48px; background:linear-gradient(to right, #6a11cb, #2575fc); color:white; border:none; border-radius:12px; font-size:16px; font-weight:600; cursor:pointer; transition:all 0.3s; box-shadow:0 4px 12px rgba(106,17,203,0.3);">
+                Continue with This Image
+            </button>
+        </div>
+        <div style="text-align:center; margin-top:16px; font-size:12px; color:#999;">
+            Or <a href="#" onclick="removeCover(); closeRiskAnalysisModal(); return false;" style="color:#6a11cb; text-decoration:none; font-weight:600;">choose a different image</a>
+        </div>
+    `;
+    
+    document.getElementById('modalResultView').innerHTML = resultHTML;
+}
+
+function showModalError(message) {
+    document.getElementById('modalLoadingView').style.display = 'none';
+    document.getElementById('modalResultView').style.display = 'block';
+    
+    document.getElementById('modalResultView').innerHTML = `
+        <div style="text-align:center; padding:40px 20px;">
+            <div style="font-size:64px; margin-bottom:16px;">⚠️</div>
+            <h3 style="margin:0 0 12px 0; color:#dc3545; font-size:20px;">Analysis Failed</h3>
+            <p style="margin:0 0 24px 0; color:#666; font-size:14px;">${message}</p>
+            <button onclick="retryAnalysisFromModal()" style="padding:12px 32px; background:#6a11cb; color:white; border:none; border-radius:10px; font-size:15px; font-weight:600; cursor:pointer; margin-right:12px;">
+                Try Again
+            </button>
+            <button onclick="closeRiskAnalysisModal()" style="padding:12px 32px; background:#e0e0e0; color:#333; border:none; border-radius:10px; font-size:15px; font-weight:600; cursor:pointer;">
+                Continue Anyway
+            </button>
+        </div>
+    `;
+}
+
+function retryAnalysisFromModal() {
+    // Reset to prompt view
+    document.getElementById('modalPromptView').style.display = 'block';
+    document.getElementById('modalLoadingView').style.display = 'none';
+    document.getElementById('modalResultView').style.display = 'none';
+}
+
+        //SINGLE addMessageToUI (handles BOTH AJAX load + real-time)
+        function addMessageToUI(msg, isSent) {
+            const container = document.getElementById('messagesContainer');
+            if (document.querySelector(`[data-message-id="${msg.id}"]`)) return;
+
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isSent ? 'sent' : 'received'}`;
+            messageDiv.dataset.messageId = msg.id;
+
+            let content = '';
+            if (msg.image_path || msg.imagepath) {
+                const imgPath = msg.image_path || msg.imagepath;
+                const cacheBuster = '?v=' + new Date(msg.timestamp).getTime();
+                content = `<img src="${imgPath}${cacheBuster}" class="image-message" alt="Steganographic message" onerror="this.style.display='none';" onclick="openDecryptModal(${msg.id})">`;
+
+                if (msg.image_path || msg.imagepath) {
+                  const imgPath = msg.image_path || msg.imagepath;
+                  content = `<img src="${imgPath}?v=${Date.now()}" class="image-message" alt="Steganographic message" onclick="openDecryptModal(${msg.id})" />`;
+        
+                // ADD THIS: Check if message is time-locked
+                if (msg.unlock_at) {
+                    const unlockTime = new Date(msg.unlock_at);
+                    const now = new Date();
+                    
+                    if (now < unlockTime) {
+                        // Message is STILL LOCKED - add overlay
+                        content += `
+                            <div class="lock-overlay" data-lock-id="${msg.id}">
+                                <i class="fas fa-lock lock-icon"></i>
+                                <div class="lock-countdown" id="countdown-${msg.id}">
+                                    Calculating...
+                                </div>
+                                <div class="lock-message">
+                                    This message will unlock at<br>
+                                    ${unlockTime.toLocaleString()}
+                                </div>
+                            </div>
+                        `;
+                        
+                        // Disable click on locked image
+                        content = content.replace('onclick="openDecryptModal', 'onclick="return false; //openDecryptModal');
+                        
+                        // Start polling after adding to DOM
+                        setTimeout(() => startLockPolling(msg.id, unlockTime), 100);
+                    }
+                }
+            }
+            } else {
+                content = `<div class="message-text">${msg.content || 'Encrypted message'}</div>`;
+            }
+
+            //  UNIFIED tick logic (works for both AJAX and Socket.IO)
+            let statusHtml = '';
+            if (isSent) {
+                const statusClass = getTickClass(msg.tick_status || msg.readstatus || 'sent');
+                statusHtml = `<span class="ticks ${statusClass}"></span>`;
+            }
+
+            messageDiv.innerHTML = `
+                <div class="message-bubble" style="position: relative;">
+                    <div class="message-options">
+                        <button class="message-option-btn" title="More options">
+                            <i class="fas fa-ellipsis-h"></i>
+                        </button>
+                    </div>
+                    ${content}
+                    <div style="display:flex;align-items:center;justify-content:flex-end;margin-top:8px;">
+                        ${statusHtml}
+                        <span class="message-time" style="font-size:11px;opacity:0.8;margin-left:6px;">
+                            ${msg.display_time || new Date(msg.timestamp).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}
+                        </span>
+                        
+                    </div>
+                </div>
+            `;
+
+            container.appendChild(messageDiv);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // SINGLE getTickClass
+        function getTickClass(status) {
+            switch(status) {
+                case 'sent': return 'single-tick';
+                case 'delivered': return 'double-tick';
+                case 'read': return 'double-tick blue';
+                default: return 'single-tick';
+            }
+        }
+
+       
+        // SINGLE decryptHiddenMessage
+       // Updated: Keep console debug logs, remove prompt/alert popups
+function decryptHiddenMessage(messageId) {
+    // Instead of prompt, you can use your modal or a better input method
+    // For now, we'll assume the modal handles input so this function can be simplified or removed later
+
+    console.log("Decrypt requested for message ID:", messageId);
+
+    // If you still want to use this function temporarily, you can hardcode or get key another way
+    // But ideally, call openDecryptModal instead
+
+    // Example: If you want to keep this function for debugging only
+    const key = prompt("Paste the decryption key (base64):", ""); // â† REMOVE THIS LINE
+
+    if (!key || key.trim() === "") {
+        console.warn("No key entered — decryption cancelled");
+        return; // No alert  silent
+    }
+
+    console.log("Attempting decrypt with key:", key.trim());
+
+    fetch(`/api/decrypt/${messageId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key: key.trim() })
+    })
+    .then(response => {
+        console.log("Decrypt response status:", response.status);
+        if (!response.ok) {
+            return response.json().then(errData => {
+                console.error("Server error response:", errData);
+                throw new Error(errData.error || `Server error ${response.status}`);
+            });
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log("Decrypt success data:", data);  // â† KEEP this debug log
+
+        // Instead of alert, show result in your modal or chat
+        // Example: append to messagesContainer or use decryptResult div
+        const resultDiv = document.getElementById('decryptResult') || document.createElement('div');
+        if (!document.getElementById('decryptResult')) {
+            resultDiv.id = 'decryptResult';
+            document.getElementById('messagesContainer').appendChild(resultDiv);
+        }
+
+        let html = `<div style="background:#f0f8ff; padding:12px; border-radius:10px; margin:10px 0;">
+            <strong>Decrypted Text:</strong><br>${data.message || '(no text)'}<br><br>`;
+
+        if (data.has_file && data.download_url) {
+            html += `<strong>Hidden File:</strong> ${data.filename || 'file'}<br>`;
+            html += `<a href="${data.download_url}" download style="display:inline-block; margin:16px auto 0; padding:12px 40px; background:#25d366; color:white; border-radius:12px; text-decoration:none; font-weight:bold; font-size:16px; box-shadow:0 4px 12px rgba(0,0,0,0.15); text-align:center; min-width:180px;">
+    Download File
+</a>`;
+        } else {
+            html += '<em>No hidden file in this message</em>';
+        }
+
+        html += '</div>';
+
+        resultDiv.innerHTML = html;
+        resultDiv.style.display = 'block';
+        resultDiv.scrollIntoView({ behavior: 'smooth' });
+    })
+    .catch(error => {
+        console.error("Decrypt failed:", error);
+        // Optional: show error in chat instead of alert
+        const errorDiv = document.createElement('div');
+        errorDiv.innerHTML = `<div style="background:#ffebee; padding:12px; border-radius:10px; margin:10px 0; color:#c62828;">
+            Decryption failed: ${error.message}
+        </div>`;
+        document.getElementById('messagesContainer').appendChild(errorDiv);
+        errorDiv.scrollIntoView({ behavior: 'smooth' });
+    });
+}
+        // SINGLE showNewMessageNotification  
+        function showNewMessageNotification(fromUser) {
+            const badge = document.querySelector(`[data-user="${fromUser}"] .unread-badge`);
+            if (badge) {
+                const count = parseInt(badge.textContent) || 0;
+                badge.textContent = count + 1;
+                badge.style.display = 'flex';
+            }
+        }   
+
+
+        // ========== TIME-LOCK FUNCTIONS ==========
+
+function startLockPolling(messageId, unlockTime) {
+    if (lockPollIntervals.has(messageId)) {
+        clearInterval(lockPollIntervals.get(messageId));
+        lockPollIntervals.delete(messageId);
+    }
+    
+    const unlockTimestamp = unlockTime.getTime();
+    
+    const pollInterval = setInterval(() => {
+        const now = Date.now();
+        const remaining = unlockTimestamp - now;
+        
+        const countdownEl = document.getElementById(`countdown-${messageId}`);
+        
+        // Update countdown display
+        if (countdownEl && remaining > 0) {
+            const seconds = Math.ceil(remaining / 1000);
+            let display = '';
+            if (seconds >= 3600) {
+                const h = Math.floor(seconds / 3600);
+                const m = Math.floor((seconds % 3600) / 60);
+                const s = seconds % 60;
+                display = `${h}h ${m}m ${s}s`;
+            } else if (seconds >= 60) {
+                const m = Math.floor(seconds / 60);
+                const s = seconds % 60;
+                display = `${m}m ${s}s`;
+            } else {
+                display = `${seconds}s`;
+            }
+            countdownEl.textContent = `🔒 Unlocks in: ${display}`;
+        }
+        
+        // 🔥 CALL BACKEND API to check lock status and trigger unlock event
+        if (remaining <= 5000) { // Start calling API when close to unlock (within 5 seconds)
+            fetch(`/api/lock_status/${messageId}`)
+                .then(response => response.json())
+                .then(data => {
+                    console.log(`Lock status for message ${messageId}:`, data);
+                    
+                    if (!data.locked) {
+                        // Message is unlocked! Stop polling
+                        clearInterval(pollInterval);
+                        lockPollIntervals.delete(messageId);
+                        
+                        // Remove overlay if backend confirms unlock
+                        const overlay = document.querySelector(`[data-lock-id="${messageId}"]`);
+                        if (overlay) {
+                            overlay.style.transition = 'opacity 0.5s ease';
+                            overlay.style.opacity = '0';
+                            setTimeout(() => overlay.remove(), 500);
+                        }
+                        
+                        // Re-enable image click
+                        const messageElem = document.querySelector(`[data-message-id="${messageId}"]`);
+                        if (messageElem) {
+                            const imgElem = messageElem.querySelector('.image-message');
+                            if (imgElem) {
+                                imgElem.onclick = function() { openDecryptModal(messageId); };
+                                imgElem.style.cursor = 'pointer';
+                            }
+                        }
+                    }
+                })
+                .catch(err => console.error(`Error checking lock status for ${messageId}:`, err));
+        }
+        
+        // Fallback: If countdown reaches 0 and API hasn't been called
+        if (remaining <= 0) {
+            clearInterval(pollInterval);
+            lockPollIntervals.delete(messageId);
+            
+            // One final API call to trigger backend unlock event
+            fetch(`/api/lock_status/${messageId}`)
+                .then(response => response.json())
+                .then(data => {
+                    console.log(`Final lock check for ${messageId}:`, data);
+                    if (!data.locked) {
+                        const overlay = document.querySelector(`[data-lock-id="${messageId}"]`);
+                        if (overlay) {
+                            overlay.style.transition = 'opacity 0.5s ease';
+                            overlay.style.opacity = '0';
+                            setTimeout(() => overlay.remove(), 500);
+                        }
+                    }
+                })
+                .catch(err => console.error(`Error in final lock check for ${messageId}:`, err));
+        }
+    }, 1000);
+    
+    lockPollIntervals.set(messageId, pollInterval);
+}
+
+        function updateCountdown(messageId, unlockTime) {
+            const countdownEl = document.getElementById(`countdown-${messageId}`);
+            if (!countdownEl) return;
+            
+            const now = new Date();
+            const remaining = unlockTime - now;
+            const seconds = Math.floor(remaining / 1000);
+            const minutes = Math.floor(seconds / 60);
+            const hours = Math.floor(minutes / 60);
+            const days = Math.floor(hours / 24);
+            
+            let display = '';
+            if (days > 0) {
+                display = `${days}d ${hours % 24}h ${minutes % 60}m`;
+            } else if (hours > 0) {
+                display = `${hours}h ${minutes % 60}m ${seconds % 60}s`;
+            } else if (minutes > 0) {
+                display = `${minutes}m ${seconds % 60}s`;
+            } else {
+                display = `${seconds}s`;
+            }
+            
+            countdownEl.innerHTML = `🔒 Unlocks in:<strong>${display}</strong>`;
+        }
+
+        function unlockMessage(messageId) {
+            const lockOverlay = document.querySelector(`[data-lock-id="${messageId}"]`);
+            
+            if (lockOverlay) {
+                // Fade out animation
+                lockOverlay.style.opacity = '0';
+                lockOverlay.style.transition = 'opacity 0.5s';
+                
+                setTimeout(() => {
+                    lockOverlay.remove();
+                    
+                    // Enable clicking to decrypt
+                    const msgDiv = document.querySelector(`[data-message-id="${messageId}"]`);
+                    const img = msgDiv?.querySelector('.image-message');
+                    if (img) {
+                        img.style.cursor = 'pointer';
+                        img.onclick = () => openDecryptModal(messageId);
+                    }
+                    
+                    // Show notification
+                    showUnlockNotification(messageId);
+                }, 500);
+            }
+        }
+
+        function showUnlockNotification(messageId) {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: linear-gradient(to right, #6a11cb, #2575fc);
+                color: white;
+                padding: 15px 25px;
+                border-radius: 10px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                z-index: 9999;
+                animation: slideIn 0.3s ease;
+                font-weight: 600;
+            `;
+            notification.innerHTML = '🔓 Message unlocked! Tap to view.';
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                notification.style.transition = 'opacity 0.3s';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+
+        // ================================
+        // SOCKET.IO EVENT LISTENERS
+        // ================================
+
+        socket.on('receive_image', function(data) {
+            const fromUser = data.from || data.sender;
+            const imgPath = data.image_path || data.imagepath;
+            const readStatus = data.read_status || data.readstatus || 'sent';
+
+            if (fromUser === currentChatUser) {
+                addMessageToUI({  //  Use unified function
+                    id: data.id || data.message_id,
+                    sender: fromUser,
+                    image_path: imgPath,
+                    timestamp: data.timestamp,
+                    readstatus: readStatus,
+                }, fromUser === username);  // isSent = true if sender is me
+            } else {
+                showNewMessageNotification(fromUser);
+            }
+
+            loadConversations(); // keep sidebar in sync
+        });
+
+        
+        socket.on('read_receipt_update', function(data) {
+            data.messages.forEach(msg => {
+                const elem = document.querySelector(`[data-message-id="${msg.id}"]`);
+                if (elem) {
+                    elem.querySelector('.ticks').className = getTickClass(msg.read_status);
+                }
+            });
+        });
+
+        socket.on('new_message_update', function(data) {
+            addMessageToUI({  // Use unified function
+                id: data.id,
+                sender: data.sender,
+                image_path: data.image_path,
+                timestamp: data.timestamp,
+                read_status: data.read_status
+            }, data.sender === username);
+        });
+
+
+        // 2. NEW: Refresh recent conversations
+        socket.on('refresh_conversations', function() {
+            loadConversations();
+        });
+
+        // 3. NEW: User online/offline status
+        socket.on('user_status', function(data) {
+            const uname = data.username;
+            const status = data.status;
+    
+            // Update sidebar status dots
+            document.querySelectorAll(`.status-dot[data-user="${uname}"]`).forEach(dot => {
+                dot.classList.remove('online', 'offline');
+                dot.classList.add(status);
+            });
+    
+            // Update list text
+            document.querySelectorAll(`.list-status-text[data-user="${uname}"]`).forEach(span => {
+                span.textContent = status === 'online' ? 'Online' : 'Offline';
+            });
+    
+            // Update header if current chat
+            if (currentChatUser === data.username) {
+                document.getElementById('partnerStatus').textContent = 
+                    status === 'online' ? 'Online' : 'Offline';
+            }
+        });
+
+        // 4. KEEP YOUR EXISTING TYPING
+        socket.on('user_typing', function(data) {
+            if (data.from === currentChatUser) {
+                document.getElementById('typingIndicator').classList.add('visible');
+            }
+        });
+
+        socket.on('user_stop_typing', function(data) {
+            if (data.from === currentChatUser) {
+                document.getElementById('typingIndicator').classList.remove('visible');
+            }
+        });
+
+        socket.on('message_deleted', function(data) {
+            const elem = document.querySelector(`[data-message-id="${data.id}"]`);
+            if (elem) {
+                elem.remove();
+                console.log(`Message ${data.id} removed from UI due to burn after view.`);
+            }
+        });
+
+        // 6. NEW: Message Unlocked (time-lock expired)
+        socket.on('message_unlocked', function(data) {
+            console.log(`🔓 Message ${data.id} has been unlocked!`);
+            
+            // Remove the lock overlay if it exists
+            const lockOverlay = document.querySelector(`.lock-overlay[data-lock-id="${data.id}"]`);
+            if (lockOverlay) {
+                lockOverlay.remove();
+                console.log(`Lock overlay removed for message ${data.id}`);
+            }
+            
+            // Find the image element and make it clickable again
+            const messageElem = document.querySelector(`[data-message-id="${data.id}"]`);
+            if (messageElem) {
+                const imgElem = messageElem.querySelector('.image-message');
+                if (imgElem) {
+                    // Re-enable click functionality
+                    imgElem.onclick = function() { openDecryptModal(data.id); };
+                    imgElem.style.cursor = 'pointer';
+                    imgElem.style.filter = 'none';
+                    console.log(`Message ${data.id} is now clickable`);
+                }
+            }
+            
+            // Show a notification
+            showNotification(`🔓 Message unlocked! Tap to view.`, 'success');
+        });
+
+        // Notify sender when their sent image is detected as tampered
+        socket.on('integrity_breach', function(data) {
+            console.warn('Integrity breach for message', data.id);
+            // If the sender currently has this message's decrypt modal open, update it
+            if (currentDecryptId == data.id) {
+                const resultDiv = document.getElementById('decryptResult');
+                resultDiv.innerHTML = `
+                    <div class="integrity-breach-box">
+                        <div class="integrity-icon">⚠️</div>
+                        <h4>Security Breach Detected</h4>
+                        <p><strong>${data.message}</strong></p>
+                        <p style="font-size:13px; margin-top:8px;">
+                            Decryption is permanently blocked. Data has been invalidated.
+                        </p>
+                    </div>`;
+            }
+            // Visual indicator on the message bubble in chat
+            const msgElem = document.querySelector(`[data-message-id="${data.id}"]`);
+            if (msgElem) {
+                const bubble = msgElem.querySelector('.message-bubble');
+                if (bubble) {
+                    bubble.style.border = '2px solid #dc3545';
+                    bubble.title = 'Integrity breach detected';
+                }
+            }
+        });
+
+        // 5. NEW: Heartbeat (keeps online status fresh)
+        setInterval(() => {
+    if (username && socket.connected) {      // â† username is already defined
+        socket.emit('heartbeat');
+    }
+}, 30000);
+        // ================================
+        // END SOCKET.IO EVENTS
+        // ================================
+
+
+
+        document.getElementById('messageInput').addEventListener('input', function() {
+            if (currentChatUser) {
+                socket.emit('typing_start', { to: currentChatUser });
+                if (typingTimer) clearTimeout(typingTimer);
+                typingTimer = setTimeout(() => socket.emit('typing_stop', { to: currentChatUser }), 1000);
+            }
+        });
+
+
+        document.getElementById('searchInput').addEventListener('input', function() {
+            const query = this.value.toLowerCase();
+            document.querySelectorAll('.chat-item').forEach(item => {
+                const name = item.querySelector('.chat-name').textContent.toLowerCase();
+                item.style.display = name.includes(query) ? 'flex' : 'none';
+            });
+        });
+
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+        }
+
+
+        const messagesContainer = document.getElementById('messagesContainer');
+
+
+        messagesContainer.addEventListener('click', (event) => {
+            const btn = event.target.closest('.message-options .message-option-btn');
+            if (!btn) {
+                document.querySelectorAll('.options-menu').forEach(m => m.remove());
+                return;
+            }
+            event.stopPropagation();
+
+
+            document.querySelectorAll('.options-menu').forEach(m => m.remove());
+
+
+            const msgElem = btn.closest('.message');
+            const messageId = msgElem.dataset.messageId;
+
+
+            const menu = document.createElement('div');
+            menu.className = 'options-menu';
+            const r = btn.getBoundingClientRect();
+            menu.style.position = 'absolute';
+            menu.style.top = (r.bottom + window.scrollY) + 'px';
+            menu.style.left = (r.left + window.scrollX - 100) + 'px';
+            menu.style.zIndex = '10000';
+            menu.innerHTML = `
+                
+                <div class="options-menu-item" onclick="showMessageInfo('${messageId}')"><i class="fas fa-info-circle"></i> Info</div>
+                <div class="options-menu-item delete" onclick="deleteMessage('${messageId}')"><i class="fas fa-trash"></i> Delete</div>
+            `;
+            document.body.appendChild(menu);
+
+
+            function close(e) {
+                if (!menu.contains(e.target) && e.target !== btn) {
+                    menu.remove();
+                    document.removeEventListener('click', close);
+                }
+            }
+            document.addEventListener('click', close);
+        });
+
+
+        
+
+        function deleteMessage(id) {
+            fetch(`/api/delete_message/${id}`, { method: 'DELETE' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const elem = document.querySelector(`.message[data-message-id='${id}']`);
+                        if (elem) elem.remove();
+                        alert('Message deleted');
+                        if (currentChatUser) loadMessages(currentChatUser);  // Reload to sync UI
+                    } else {
+                        alert(data.message || 'Delete failed');
+                    }
+                })
+                .catch(error => alert('Server error while deleting'))
+                .finally(() => document.querySelectorAll('.options-menu').forEach(m => m.remove()));
+        }
+            
+
+// ========== ENHANCED MESSAGE INFO FUNCTION ==========
+function showMessageInfo(messageId) {
+    if (!currentChatUser) return;
+    
+    fetch(`/api/messages?with=${encodeURIComponent(currentChatUser)}`)
+        .then(r => r.json())
+        .then(msgs => {
+            // Convert messageId to number for comparison
+            const msgId = parseInt(messageId);
+            const m = msgs.find(x => x.id === msgId);
+            
+            if (!m) {
+                alert('Unable to load message info');
+                return;
+            }
+            
+            const isSent = m.sender === username;
+            
+            // FromTo
+            const fromTo = isSent ? `To: ${m.receiver}` : `From: ${m.sender}`;
+            document.getElementById('msgInfoFromTo').textContent = fromTo;
+            
+            // Message Type
+            let msgType = 'Text Message';
+            if (m.imagepath) {
+                msgType = 'Encrypted Image';
+            }
+            document.getElementById('msgInfoType').textContent = msgType;
+            
+            // Security Status
+            let securityText = 'End-to-end encrypted';
+            if (m.burn_after_view) {
+                securityText += ' • Burn after view';
+            }
+            document.getElementById('msgInfoSecurity').textContent = securityText;
+            
+            // ========== DIFFERENT LOGIC FOR SENT vs RECEIVED ==========
+            if (isSent) {
+                // FOR SENT MESSAGES: Show Sent time + When viewed by receiver
+                
+                // Sent Time (always available)
+                const sentTime = formatFullDate(m.timestamp);
+                document.getElementById('msgInfoSentTime').textContent = sentTime;
+                
+                // Hide Delivered section for sent messages
+                document.getElementById('msgInfoDeliveredTime').parentElement.style.display = 'none';
+                
+                // Read Time = When receiver viewed it
+                let readStr = 'Not viewed yet';
+                if (m.tick_status === 'read' || m.read_status === 'read') {
+                    // If there's a read_at timestamp, use it
+                    if (m.read_at) {
+                        readStr = formatFullDate(m.read_at);
+                    } else {
+                        // Otherwise use the message timestamp (backend should provide read_at)
+                        readStr = formatFullDate(m.timestamp);
+                    }
+                }
+                
+                // Update the Read section
+                const readSection = document.getElementById('msgInfoReadTime').parentElement;
+                readSection.style.display = 'block';
+                readSection.querySelector('span:nth-child(2)').textContent = 'Viewed by Receiver';
+                document.getElementById('msgInfoReadTime').textContent = readStr;
+                
+            } else {
+                // FOR RECEIVED MESSAGES: Show only Received time/date
+                
+                // Hide Sent section for received messages
+                document.getElementById('msgInfoSentTime').parentElement.style.display = 'none';
+                
+                // Show Received Time
+                const receivedTime = formatFullDate(m.timestamp);
+                
+                // Use the Delivered section to show "Received"
+                const deliveredSection = document.getElementById('msgInfoDeliveredTime').parentElement;
+                deliveredSection.style.display = 'block';
+                deliveredSection.querySelector('span:nth-child(2)').textContent = 'Received';
+                document.getElementById('msgInfoDeliveredTime').textContent = receivedTime;
+                
+                // Hide Read section for received messages
+                document.getElementById('msgInfoReadTime').parentElement.style.display = 'none';
+            }
+            
+            // Open the modal
+            openMsgInfoModal();
+        })
+        .catch(() => alert('Failed to load message info'));
+}
+
+// Helper function to format dates nicely
+function formatFullDate(timestamp) {
+    if (!timestamp) return '-';
+    
+    const date = new Date(timestamp);
+    
+    // Format: "Feb 3, 2026 at 8:24 PM"
+    const options = {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+    };
+    
+    return date.toLocaleString('en-US', options);
+}
+
+function openMsgInfoModal() {
+    const m = document.getElementById('msgInfoModal');
+    m.style.display = 'flex';
+}
+
+function closeMsgInfoModal() {
+    const m = document.getElementById('msgInfoModal');
+    m.style.display = 'none';
+    
+    // Reset display of all sections for next use
+    document.getElementById('msgInfoSentTime').parentElement.style.display = 'block';
+    document.getElementById('msgInfoDeliveredTime').parentElement.style.display = 'block';
+    document.getElementById('msgInfoReadTime').parentElement.style.display = 'block';
+}
+
+let currentDecryptId = null;
+let currentBurnMessageId = null;
+
+function openDecryptModal(messageId) {
+    currentDecryptId = messageId;
+    currentBurnMessageId = null; // reset
+    document.getElementById('decryptModal').style.display = 'flex';
+    document.getElementById('burnConfirmArea').style.display = 'none';
+
+    // STEP 1: Show integrity-checking state (instead of auto-decrypting)
+    document.getElementById('decryptModalTitle').textContent = 'Verifying Integrity...';
+    const resultDiv = document.getElementById('decryptResult');
+    resultDiv.innerHTML = `
+        <div class="integrity-checking">
+            <div class="loading"></div>
+        </div>`;
+    resultDiv.style.display = 'block';
+
+    // STEP 2: Call verify-integrity endpoint BEFORE decrypting
+    fetch(`/api/verify-integrity/${messageId}`, { method: 'POST' })
+        .then(r => r.json())
+        .then(data => {
+            if (!data.success) {
+                resultDiv.innerHTML = `<div class="decrypt-error-box">⚠️ Verification error: ${data.error || 'Unknown error'}</div>`;
+                return;
+            }
+
+            if (data.integrity_ok) {
+                // ✅ Case 1: Integrity verified — show green box + proceed button
+                resultDiv.innerHTML = `
+                    <div class="integrity-ok-box">
+                        <div class="integrity-icon">🛡️</div>
+                        <h4>Integrity Verified</h4>
+                        <p>${data.message}</p>
+                        <button class="proceed-decrypt-btn" onclick="decryptAndShow()">
+                            🔓 Proceed for Decryption
+                        </button>
+                    </div>`;
+            } else {
+                // 🔴 Case 2: Tampered — show warning, NO decrypt button
+                const isSenderBreach = data.role === 'sender';
+                resultDiv.innerHTML = `
+                    <div class="${isSenderBreach ? 'integrity-breach-box' : 'integrity-fail-box'}">
+                        <div class="integrity-icon">${isSenderBreach ? '⚠️' : '🚨'}</div>
+                        <h4>${isSenderBreach ? 'Security Breach Detected' : 'Integrity Check Failed'}</h4>
+                        <p><strong>${data.message}</strong></p>
+                        <p style="font-size:13px; margin-top:8px; opacity:0.85;">
+                            ${isSenderBreach
+                                ? 'This data has been invalidated. Decryption is permanently blocked.'
+                                : 'This image may have been tampered with or corrupted. Decryption has been blocked to protect your security.'}
+                        </p>
+                    </div>`;
+            }
+        })
+        .catch(err => {
+            resultDiv.innerHTML = `<div class="decrypt-error-box">Network error during integrity check. Please try again.</div>`;
+            console.error('Integrity check failed', err);
+        });
+
+    // NOTE: decryptAndShow() is NO LONGER called here automatically.
+    // It is only called when the user clicks "Proceed for Decryption" button above.
+}
+
+
+function closeDecryptModal() {
+    // 🔥 BURN AFTER VIEW: Automatically delete message if it was marked as burnable
+    if (currentBurnMessageId) {
+        console.log(`🔥 Auto-burning message ${currentBurnMessageId} on modal close`);
+        
+        // Call the backend to delete the message for both sender and receiver
+        fetch(`/api/confirm_burn/${currentBurnMessageId}`, { method: 'POST' })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    console.log(`🔥 Message ${currentBurnMessageId} burned successfully`);
+                    // Message will be removed from UI via SocketIO event
+                } else {
+                    console.error('Failed to burn message:', data.error);
+                }
+            })
+            .catch(err => {
+                console.error('Error burning message:', err);
+            });
+    }
+    
+    document.getElementById('decryptModal').style.display = 'none';
+    currentDecryptId = null;
+    currentBurnMessageId = null;
+}
+
+function decryptAndShow() {
+    document.getElementById('decryptModalTitle').textContent = 'Decrypting Hidden Message...';
+    const resultDiv = document.getElementById('decryptResult');
+    resultDiv.innerHTML = '<div style="display:flex; flex-direction:column; align-items:center; gap:15px; padding:40px 20px;"><div class="loading"></div></div>';
+    resultDiv.style.display = 'block';
+
+    fetch(`/api/decrypt/${currentDecryptId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({})  //  No key needed anymore!
+    })
+    .then(r => r.json())
+    .then(data => {
+        resultDiv.innerHTML = '';  // clear loading
+
+        if (data.success) {
+            let html = `<strong>Decrypted Text:</strong><br>${data.message || '(no text)'}<br><br>`;
+
+            if (data.has_file && data.download_url) {
+                html += `
+                    <strong>Hidden File:</strong><br>
+                    <span class="file-name truncate">${data.filename || 'file'}</span><br>
+                    <a href="${data.download_url}" download
+                       style="display:flex; justify-content:center; align-items:center; margin:16px auto 0; padding:12px 50px; background:#25d366; color:white; border-radius:12px; text-decoration:none; font-weight:bold; font-size:20px; box-shadow:0 4px 12px rgba(0,0,0,0.15); min-width:220px; box-sizing:border-box;">
+                       Download File
+                    </a>`;
+            } else {
+                html += '<em>No hidden file in this message</em>';
+            }
+
+            resultDiv.innerHTML = html;
+
+            // 🔥 BURN AFTER VIEW: Automatic deletion on modal close
+            if (data.is_burnable) {
+                // This message will auto-burn when modal closes
+                currentBurnMessageId = currentDecryptId;
+                resultDiv.innerHTML += `<p style="color:#e74c3c; font-weight:600; margin-top:16px; background: rgba(231, 76, 60, 0.1); padding: 15px; border-radius: 8px; border-left: 4px solid #e74c3c;">
+                    🔥 <strong>View Once Mode Active</strong><br>
+                    This message will be permanently deleted for both you and the sender when you close this window.
+                </p>`;
+                console.log(`🔥 Message ${currentDecryptId} marked for auto-burn on close`);
+            } else if (data.burn_after_view && data.burned) {
+                // Already viewed and burned - shouldn't happen, but show message
+                resultDiv.innerHTML += `<p style="color:#999; font-weight:600; margin-top:16px;">
+                    This was a view-once message (already viewed).
+                </p>`;
+            }
+        } else {
+            let errorText = data.error || 'Decryption failed';
+
+            let errorClass = 'decrypt-error-box';
+            let message = errorText;
+
+            if (errorText.toLowerCase().includes('expired') || errorText.includes('burn')) {
+                message = 'Sorry, this message has expired or been burned after viewing.';
+            } else if (errorText.toLowerCase().includes('invalid') || errorText.includes('corrupted')) {
+                message = 'Decryption failed — message data appears corrupted or tampered.';
+            }
+
+            resultDiv.innerHTML = `<div class="${errorClass}">${message}</div>`;
+        }
+    })
+    .catch(err => {
+        resultDiv.innerHTML = `
+            <div class="decrypt-error-box">
+               Network error — please check your connection and try again.
+            </div>`;
+        console.error('Decrypt fetch error:', err);
+    });
+}
+
+// Keep confirmAndDelete unchanged (your original logic)
+function confirmAndDelete() {
+    if (!currentBurnMessageId) return;
+
+    fetch(`/api/confirm_burn/${currentBurnMessageId}`, { method: 'POST' })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                alert("Message has been deleted.");
+            }
+            closeDecryptModal();
+        })
+        .catch(() => {
+            alert("Could not delete message at this time.");
+            closeDecryptModal();
+        });
+}
+
+
+// ═══════════════════════════════════════════════════════
+// SCREENSHOT DETECTION DISABLED (removed auto-delete feature)
+// Only keyboard/right-click blocking remains active at page level
+// ═══════════════════════════════════════════════════════
+
+
+// Open/close modal
+function openDeadmanModal() {
+  const m = document.getElementById("deadmanModal");
+  if (!m) return;
+  m.style.display = "flex";
+  loadDeadmanConfig();
+  loadDeadmanStatus();
+}
+function closeDeadmanModal() {
+  const m = document.getElementById("deadmanModal");
+  if (m) m.style.display = "none";
+}
+
+    // ===========================
+    // SETTINGS MODAL FUNCTIONS
+    // ===========================
+    function openSettingsModal() {
+        const modal = document.getElementById('settingsModal');
+        if (modal) {
+            modal.style.display = 'flex';
+        }
+    }
+
+    function closeSettingsModal() {
+        const modal = document.getElementById('settingsModal');
+        if (modal) {
+            modal.style.display = 'none';
+        }
+    }
+
+    function openDeadmanModalFromSettings() {
+        // Close the settings modal first
+        closeSettingsModal();
+        // Then open the Dead Man's Switch modal with a smooth transition
+        setTimeout(() => {
+            openDeadmanModal();
+        }, 200);
+    }
+
+
+
+
+
+// Load config
+function loadDeadmanConfig() {
+  fetch("/api/deadman/config")
+    .then(r => r.json())
+    .then(cfg => {
+      document.getElementById("deadmanEnableCheckbox").checked = !!cfg.is_active;
+      document.getElementById("checkinIntervalInput").value = cfg.checkin_interval_hours || 24;
+      document.getElementById("gracePeriodInput").value = cfg.grace_period_hours || 1;  // Changed from 6 to 1
+
+    })
+    .catch(() => {
+      const status = document.getElementById("deadmanStatusLine");
+      if (status) status.textContent = "Status: Unable to load configuration.";
+    });
+}
+
+// Save config
+function saveDeadmanConfig() {
+  const enabled = document.getElementById("deadmanEnableCheckbox").checked;
+  const checkinInput = document.getElementById("checkinIntervalInput");
+  const graceInput = document.getElementById("gracePeriodInput");
+  
+  // DEBUG: Log what the inputs contain
+  console.log("🔍 DEBUG - Input values:");
+  console.log("  checkinInput.value =", checkinInput.value);
+  console.log("  graceInput.value =", graceInput.value);
+  
+  const checkin = parseInt(checkinInput.value || "24", 10);
+  const grace = parseInt(graceInput.value || "1", 10);  // Changed from "6" to "1"
+  
+  console.log("🔍 DEBUG - Parsed values:");
+  console.log("  checkin =", checkin);
+  console.log("  grace =", grace);
+  console.log("  total =", checkin + grace);
+  
+  // Validate total timeline doesn't exceed 36 hours
+  const totalHours = checkin + grace;
+  if (totalHours > 36) {
+    alert(`Total timeline (Check-in + Grace) cannot exceed 36 hours.\nYou entered: ${checkin}h + ${grace}h = ${totalHours}h\nPlease adjust your settings.`);
+    return;
+  }
+
+  const payload = {
+    is_active: enabled,
+    checkin_interval_hours: checkin,
+    grace_period_hours: grace
+  };
+  
+  console.log("📤 DEBUG - Sending payload:", payload);
+
+  fetch("/api/deadman/config", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify(payload)
+  })
+    .then(r => r.json())
+    .then(data => {
+      if (!data.success) throw new Error(data.error || "Save failed");
+      alert("Dead Man’s Switch settings saved.");
+      loadDeadmanStatus();
+    })
+    .catch(err => {
+      alert("Could not save settings: " + err.message);
+    });
+}
+
+// Check-in button
+function sendDeadmanCheckin() {
+  fetch("/api/deadman/checkin", {method: "POST"})
+    .then(r => r.json())
+    .then(data => {
+      if (!data.success) throw new Error(data.error || "Check-in failed");
+      alert("Check-in recorded. You are marked as safe.");
+      loadDeadmanStatus();
+    })
+    .catch(err => {
+      alert("Could not record check-in: " + err.message);
+    });
+}
+
+// Status + countdown
+let deadmanStatusTimer = null;
+
+function loadDeadmanStatus() {
+  fetch("/api/deadman/status")
+    .then(r => r.json())
+    .then(status => {
+      const line = document.getElementById("deadmanStatusLine");
+      if (!line) return;
+
+      if (status.stage === "INACTIVE") {
+        line.textContent = "Status: Dead Man’s Switch is disabled.";
+        if (deadmanStatusTimer) clearInterval(deadmanStatusTimer);
+        return;
+      }
+
+      function render() {
+        const toOver = status.seconds_to_overdue;
+        const toEmerg = status.seconds_to_emergency;
+        let text = "Status: " + status.stage;
+
+        if (status.stage === "ACTIVE" && toEmerg != null) {
+          // Show total time until Emergency (check-in + grace period)
+          text += " – " + formatCountdown(toEmerg) + " until Emergency (Check-in: " + formatCountdown(toOver) + ").";
+        } else if (status.stage === "GRACE" && toEmerg != null) {
+          text += " – Grace period running: " + formatCountdown(toEmerg) + " until Emergency.";
+        } else if (status.stage === "EMERGENCY") {
+          text += " – Emergency conditions met. (Burn commands & alerts may run.)";
+        }
+        line.textContent = text;
+        if (status.stage !== "EMERGENCY") {
+          status.seconds_to_overdue = Math.max(0, status.seconds_to_overdue - 1);
+          status.seconds_to_emergency = Math.max(0, status.seconds_to_emergency - 1);
+        }
+      }
+
+      if (deadmanStatusTimer) clearInterval(deadmanStatusTimer);
+      render();
+      deadmanStatusTimer = setInterval(render, 1000);
+    })
+    .catch(() => {
+      const line = document.getElementById("deadmanStatusLine");
+      if (line) line.textContent = "Status: Unable to determine switch status.";
+    });
+}
+
+function formatCountdown(totalSeconds) {
+  totalSeconds = Math.max(0, totalSeconds | 0);
+  const h = Math.floor(totalSeconds / 3600);
+  const m = Math.floor((totalSeconds % 3600) / 60);
+  const s = totalSeconds % 60;
+  if (h > 0) return `${h}h ${m}m ${s}s`;
+  if (m > 0) return `${m}m ${s}s`;
+  return `${s}s`;
+}
+
+  </script>
+<!-- Terms & Conditions Modal -->
+<div id="termsModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:5000; justify-content:center; align-items:center;">
+    <div style="background:white; border-radius:20px; width:90%; max-width:420px; padding:32px; box-shadow:0 20px 60px rgba(0,0,0,0.3); position:relative;">
+        <button onclick="closeTermsModal()" style="position:absolute; top:16px; right:16px; background:none; border:none; font-size:20px; color:#999; cursor:pointer; width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center;">
+            <i class="fas fa-times"></i>
+        </button>
+        <div style="text-align:center; margin-bottom:24px;">
+            <div style="width:56px; height:56px; background:linear-gradient(135deg,#6a11cb,#2575fc); border-radius:16px; display:flex; align-items:center; justify-content:center; margin:0 auto 14px;">
+                <i class="fas fa-file-contract" style="color:white; font-size:22px;"></i>
+            </div>
+            <h3 style="margin:0; font-size:20px; color:#1a1a2e;">Legal Documents</h3>
+            <p style="margin:6px 0 0; color:#666; font-size:14px;">Select a document to view</p>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:12px;">
+            <div onclick="window.location.href='/privacy'" style="display:flex; align-items:center; gap:16px; padding:16px 18px; border-radius:14px; border:2px solid #e0e6ed; cursor:pointer; transition:all 0.2s;" onmouseover="this.style.borderColor='#6a11cb'; this.style.background='#f8f4ff';" onmouseout="this.style.borderColor='#e0e6ed'; this.style.background='white';">
+                <div style="width:42px; height:42px; background:linear-gradient(135deg,#f093fb,#f5576c); border-radius:12px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                    <i class="fas fa-user-shield" style="color:white; font-size:16px;"></i>
+                </div>
+                <div style="flex:1;">
+                    <div style="font-weight:600; color:#1a1a2e; font-size:15px;">Privacy Policy</div>
+                    <div style="font-size:13px; color:#888; margin-top:2px;">How we handle your data</div>
+                </div>
+                <i class="fas fa-chevron-right" style="color:#6a11cb; font-size:13px;"></i>
+            </div>
+            <div onclick="window.location.href='/terms'" style="display:flex; align-items:center; gap:16px; padding:16px 18px; border-radius:14px; border:2px solid #e0e6ed; cursor:pointer; transition:all 0.2s;" onmouseover="this.style.borderColor='#6a11cb'; this.style.background='#f8f4ff';" onmouseout="this.style.borderColor='#e0e6ed'; this.style.background='white';">
+                <div style="width:42px; height:42px; background:linear-gradient(135deg,#6a11cb,#2575fc); border-radius:12px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                    <i class="fas fa-file-alt" style="color:white; font-size:16px;"></i>
+                </div>
+                <div style="flex:1;">
+                    <div style="font-weight:600; color:#1a1a2e; font-size:15px;">Terms of Service</div>
+                    <div style="font-size:13px; color:#888; margin-top:2px;">Rules and agreements for using the app</div>
+                </div>
+                <i class="fas fa-chevron-right" style="color:#6a11cb; font-size:13px;"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function openTermsModal() {
+    closeSettingsModal();
+    setTimeout(() => {
+        const m = document.getElementById('termsModal');
+        m.style.display = 'flex';
+    }, 200);
+}
+function closeTermsModal() {
+    document.getElementById('termsModal').style.display = 'none';
+}
+</script>
+</body>
+</html>

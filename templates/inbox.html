@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Inbox | Secure Messaging</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; padding: 20px; }
+        .message-card { background: white; padding: 15px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .stego-img { max-width: 300px; border-radius: 4px; border: 1px solid #ddd; }
+        .decrypt-btn { background: #2575fc; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; }
+        .key-input { padding: 8px; width: 250px; margin-right: 10px; border: 1px solid #ccc; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <h2>Your Secure Inbox</h2>
+    <div id="messages-container">
+        </div>
+
+    <script>
+        async function loadMessages() {
+            const container = document.getElementById('messages-container');
+            container.innerHTML = '<p style="text-align:center;">Fetching secure messages...</p>';
+
+            const res = await fetch('/api/get_messages'); 
+            const data = await res.json();
+            container.innerHTML = ''; 
+
+            data.messages.forEach(msg => {
+                const card = document.createElement('div');
+                card.className = 'message-card';
+                card.innerHTML = `
+                    <p><strong>From:</strong> ${msg.sender} | <strong>Date:</strong> ${msg.timestamp}</p>
+                    <img src="/${msg.image_path}" class="stego-img"><br><br>
+                    <div id="decrypt-area-${msg.id}">
+                        <input type="text" placeholder="Enter AES Key" id="key-${msg.id}" class="key-input">
+                        <button class="decrypt-btn" onclick="decrypt(${msg.id})">Decrypt</button>
+                    </div>
+                    <p id="result-${msg.id}" style="font-weight:bold; color:#1a73e8; margin-top:10px;"></p>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        async function decrypt(msgId) {
+            const key = document.getElementById(`key-${msgId}`).value;
+            const res = await fetch(`/api/decrypt/${msgId}`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ key: key })
+            });
+            const data = await res.json();
+            if(data.success) {
+                document.getElementById(`result-${msgId}`).innerText = "Message: " + data.message;
+                document.getElementById(`decrypt-area-${msgId}`).style.display = 'none';
+            } else {
+                alert(data.error);
+            }
+        }
+
+        window.onload = loadMessages;
+    </script>
+</body>
+</html>
