@@ -1,0 +1,10 @@
+flask
+flask-login
+flask-socketio
+mysql-connector-python
+pycryptodome
+opencv-python
+numpy
+qrcode
+pillow
+werkzeug

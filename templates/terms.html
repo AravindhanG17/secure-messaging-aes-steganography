@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terms of Service | Secure Messaging</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .terms-container {
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 800px;
+            overflow: hidden;
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        .terms-header {
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+        
+        .terms-header h2 {
+            font-size: 28px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .terms-content {
+            padding: 30px;
+            line-height: 1.6;
+            color: #333;
+        }
+        
+        .terms-content h3 {
+            color: #6a11cb;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+        
+        .terms-content p {
+            margin-bottom: 15px;
+        }
+        
+        .terms-content a {
+            color: #2575fc;
+            text-decoration: none;
+        }
+        
+        .terms-content a:hover {
+            text-decoration: underline;
+        }
+        
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: #6a11cb;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @media (max-width: 480px) {
+            .terms-container {
+                border-radius: 10px;
+            }
+            
+            .terms-content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="terms-container">
+        <div class="terms-header">
+            <h2>Terms of Service</h2>
+        </div>
+        
+        <div class="terms-content">
+            <p>Last Updated: December 28, 2025</p>
+            
+            <h3>1. Acceptance of Terms</h3>
+            <p>By accessing or using the Secure Messaging application ("Service"), you agree to be bound by these Terms of Service ("Terms"). If you do not agree, please do not use the Service.</p>
+            
+            <h3>2. Eligibility</h3>
+            <p>You must be at least 13 years old to use this Service. By using the Service, you represent that you meet this age requirement.</p>
+            
+            <h3>3. Account Responsibilities</h3>
+            <p>You are responsible for maintaining the confidentiality of your account credentials and for all activities that occur under your account. You agree to notify us immediately of any unauthorized use.</p>
+            
+            <h3>4. Use of Service & Encryption</h3>
+            <p>The Service utilizes Advanced Encryption Standard (AES) and Steganographic techniques to secure communications. You acknowledge that certain decryption keys are provided via QR codes. It is your sole responsibility to secure these keys; if a key is lost, the encrypted content cannot be recovered by [Your Company Name].</p>
+            
+            <h3>5. Intellectual Property</h3>
+            <p>The Service and its original content are the property of [Your Company Name] and are protected by copyright and other intellectual property laws.</p>
+            
+            <h3>6. Termination</h3>
+            <p>We reserve the right to terminate or suspend your account at our discretion, with or without notice, for any violation of these Terms.</p>
+            
+            <h3>7. Limitation of Liability</h3>
+            <p>[Your Company Name] provides the Service "as is." We are not liable for any loss of data, including messages rendered inaccessible due to lost decryption keys, forgotten passwords, or the inherent nature of steganographic data transmission.</p>
+            
+            <h3>8. Changes to Terms</h3>
+            <p>We may update these Terms from time to time. Continued use of the Service after changes constitutes acceptance of the new Terms.</p>
+            
+            <h3>9. Contact Us</h3>
+            <p>For questions about these Terms, please contact us at <a href="mailto:support@securemessaging.com">support@securemessaging.com</a>.</p>
+            
+            <a href="{{ url_for('register') }}" class="back-link">Back to Registration</a>
+        </div>
+    </div>
+</body>
+</html>
